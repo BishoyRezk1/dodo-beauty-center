@@ -39,6 +39,7 @@ model Customer {
   name          String
   phone         String    @unique
   bookings      Booking[]
+  offers        Offer[]
   totalPaid     Decimal   @default(0) @db.Decimal(10, 2)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -56,6 +57,7 @@ model Service {
   isActive      Boolean   @default(true)
   sortOrder     Int       @default(0)
   bookings      Booking[]
+  offers        Offer[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
