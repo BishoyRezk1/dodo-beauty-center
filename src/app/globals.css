@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Cairo", sans-serif;
+  --font-body: "Cairo", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #FFF5F7;
+  color: #4A2C35;
+}
+
+::selection {
+  background-color: #E85588;
+  color: #ffffff;
+}
+
+.section-container {
+  @apply mx-auto max-w-6xl px-5 md:px-8;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-wine px-6 py-3 text-sm font-bold text-cream shadow-soft transition hover:bg-wineDark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rosegold disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-wine px-6 py-3 text-sm font-bold text-wine transition hover:bg-wine hover:text-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rosegold;
+}
+
+.card {
+  @apply rounded-xl2 bg-white/70 backdrop-blur-sm shadow-soft border border-rosegold/20;
+}
+
+.input-field {
+  @apply w-full rounded-xl border border-charcoal/15 bg-white px-4 py-3 text-charcoal placeholder:text-charcoal/40 focus:border-wine focus:outline-none focus:ring-2 focus:ring-rosegold/40;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

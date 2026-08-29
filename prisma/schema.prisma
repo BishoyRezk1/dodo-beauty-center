@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  OWNER
+  STAFF
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum FeeType {
+  FIXED
+  PERCENT
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(OWNER)
+  createdAt    DateTime  @default(now())
+}
+
+model Customer {
+  id            String    @id @default(cuid())
+  name          String
+  phone         String    @unique
+  bookings      Booking[]
+  totalPaid     Decimal   @default(0) @db.Decimal(10, 2)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Service {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  description   String?
+  imageUrl      String?
+  price         Decimal   @db.Decimal(10, 2)
+  discountPrice Decimal?  @db.Decimal(10, 2)
+  durationMin   Int       @default(60)
+  isActive      Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  bookings      Booking[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Offer {
+  id          String   @id @default(cuid())
+  title       String
+  details     String?
+  imageUrl    String?
+  oldPrice    Decimal  @db.Decimal(10, 2)
+  newPrice    Decimal  @db.Decimal(10, 2)
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  serviceId   String?
+  service     Service? @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([serviceId])
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  bookingNumber   String        @unique
+  customerId      String
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  serviceId       String
+  service         Service       @relation(fields: [serviceId], references: [id])
+  date            DateTime
+  startTime       String
+  endTime         String
+  notes           String?
+  feeAmount       Decimal       @db.Decimal(10, 2)
+  status          BookingStatus @default(PENDING)
+  payment         Payment?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([date, startTime])
+  @@index([status])
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  bookingId       String   @unique
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  amount          Decimal  @db.Decimal(10, 2)
+  method          String   @default("VODAFONE_CASH")
+  screenshotUrl   String
+  verified        Boolean  @default(false)
+  verifiedAt      DateTime?
+  createdAt       DateTime @default(now())
+}
+
+model WorkingHours {
+  id        String   @id @default(cuid())
+  dayOfWeek Int      // 0 = Sunday ... 6 = Saturday
+  isOpen    Boolean  @default(true)
+  startTime String   @default("10:00")
+  endTime   String   @default("22:00")
+  breakStart String?
+  breakEnd   String?
+
+  @@unique([dayOfWeek])
+}
+
+model ClosedDate {
+  id     String   @id @default(cuid())
+  date   DateTime @unique
+  reason String?
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  type      String   @default("BOOKING")
+  isRead    Boolean  @default(false)
+  bookingId String?
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+}
