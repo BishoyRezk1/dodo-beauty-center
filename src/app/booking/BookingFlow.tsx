@@ -36,6 +36,11 @@ export default function BookingFlow() {
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
 
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState<number | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bookingNumber, setBookingNumber] = useState<string | null>(null);
@@ -69,8 +74,33 @@ export default function BookingFlow() {
     const price = Number(selectedService.discountPrice ?? selectedService.price);
     const feeType = settings.fee_type || "FIXED";
     const feeValue = parseFloat(settings.fee_value || "0");
-    return feeType === "PERCENT" ? Math.round(((price * feeValue) / 100) * 100) / 100 : feeValue;
-  }, [selectedService, settings]);
+    let amount = feeType === "PERCENT" ? Math.round(((price * feeValue) / 100) * 100) / 100 : feeValue;
+    if (couponDiscount) {
+      amount = Math.round(amount * (1 - couponDiscount / 100) * 100) / 100;
+    }
+    return amount;
+  }, [selectedService, settings, couponDiscount]);
+
+  async function applyCoupon() {
+    if (!couponCode.trim() || !selectedService) return;
+    setCheckingCoupon(true);
+    setCouponError(null);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode, serviceId: selectedService.id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "كود غير صالح");
+      setCouponDiscount(data.discountPercent);
+    } catch (err: any) {
+      setCouponDiscount(null);
+      setCouponError(err.message);
+    } finally {
+      setCheckingCoupon(false);
+    }
+  }
 
   const minDate = new Date().toISOString().split("T")[0];
 
@@ -103,7 +133,8 @@ export default function BookingFlow() {
           date,
           time,
           notes,
-          screenshotUrl: uploadData.url
+          screenshotUrl: uploadData.url,
+          couponCode: couponDiscount ? couponCode : undefined
         })
       });
       const bookingData = await bookingRes.json();
@@ -262,6 +293,32 @@ export default function BookingFlow() {
               {settings.vodafone_number}
             </p>
           </div>
+
+          <div className="mb-6 flex gap-2">
+            <input
+              placeholder="كود الخصم (اختياري)"
+              value={couponCode}
+              onChange={(e) => {
+                setCouponCode(e.target.value.toUpperCase());
+                setCouponDiscount(null);
+                setCouponError(null);
+              }}
+              className="input-field flex-1"
+              dir="ltr"
+            />
+            <button
+              type="button"
+              onClick={applyCoupon}
+              disabled={!couponCode.trim() || checkingCoupon}
+              className="btn-secondary shrink-0 !py-2 text-sm"
+            >
+              {checkingCoupon ? "..." : "تطبيق"}
+            </button>
+          </div>
+          {couponDiscount !== null && (
+            <p className="mb-4 text-sm font-bold text-emerald-600">✓ تم تطبيق خصم {couponDiscount}%</p>
+          )}
+          {couponError && <p className="mb-4 text-sm font-bold text-red-600">{couponError}</p>}
 
           <ol className="mb-6 list-inside list-decimal space-y-1 text-sm text-charcoal/70">
             <li>قومي بتحويل رسوم الحجز إلى رقم Vodafone Cash أعلاه.</li>

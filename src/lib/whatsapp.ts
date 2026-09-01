@@ -112,3 +112,46 @@ export function bookingRejectedCustomerMessage(params: { bookingNumber: string }
 
 نأسف، لم نتمكن من تأكيد حجزك رقم ${params.bookingNumber} — يرجى التواصل معنا على واتساب لمراجعة عملية الدفع.`;
 }
+
+export function bookingCancelledCustomerMessage(params: { bookingNumber: string }) {
+  return `DoDo Beauty Center
+
+تم إلغاء حجزك رقم ${params.bookingNumber}. لو حابة تحجزي موعد تاني، إحنا في انتظارك 🌷`;
+}
+
+export function bookingRescheduledCustomerMessage(params: {
+  bookingNumber: string;
+  serviceName: string;
+  dateLabel: string;
+  timeLabel: string;
+}) {
+  return `DoDo Beauty Center
+
+تم تعديل موعد حجزك رقم ${params.bookingNumber}.
+
+الخدمة: ${params.serviceName}
+الموعد الجديد: ${params.dateLabel} — ${params.timeLabel}
+
+في انتظارك 💕`;
+}
+
+export function reminderMessage(params: {
+  serviceName: string;
+  timeLabel: string;
+  hoursBefore: 24 | 2;
+}) {
+  const when = params.hoursBefore === 24 ? "بكرة" : "بعد ساعتين";
+  return `💕 تذكير من DoDo Beauty Center
+
+معاكِ موعد ${when} الساعة ${params.timeLabel} لخدمة ${params.serviceName}.
+في انتظارك 🌷`;
+}
+
+export function reviewRequestMessage(params: { bookingNumber: string; reviewUrl: string }) {
+  return `DoDo Beauty Center 💕
+
+نتمنى تكوني استمتعتي بزيارتك! نسعد لو قيّمتي تجربتك:
+${params.reviewUrl}
+
+(رقم الحجز: ${params.bookingNumber})`;
+}

@@ -37,6 +37,9 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+  const [reschedulingId, setReschedulingId] = useState<string | null>(null);
+  const [newDate, setNewDate] = useState("");
+  const [newTime, setNewTime] = useState("");
 
   async function load() {
     setLoading(true);
@@ -59,6 +62,21 @@ export default function BookingsPage() {
     });
     const data = await res.json();
     if (data.whatsappLink) setWhatsappLink(data.whatsappLink);
+    load();
+  }
+
+  async function submitReschedule(id: string) {
+    if (!newDate || !newTime) return;
+    const res = await fetch(`/api/bookings/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: newDate, startTime: newTime })
+    });
+    const data = await res.json();
+    if (data.whatsappLink) setWhatsappLink(data.whatsappLink);
+    setReschedulingId(null);
+    setNewDate("");
+    setNewTime("");
     load();
   }
 
@@ -94,7 +112,8 @@ export default function BookingsPage() {
 
       <div className="flex flex-col gap-4">
         {bookings.map((b) => (
-          <div key={b.id} className="card flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
+          <div key={b.id} className="card flex flex-col gap-3 p-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-charcoal/50">{b.bookingNumber}</span>
@@ -135,6 +154,26 @@ export default function BookingsPage() {
                   </button>
                 </>
               )}
+              {b.status === "CONFIRMED" && (
+                <>
+                  <button
+                    onClick={() => updateStatus(b.id, "COMPLETED")}
+                    className="rounded-full border-2 border-blue-400 px-4 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50"
+                  >
+                    تم الانتهاء
+                  </button>
+                  <button
+                    onClick={() => {
+                      setReschedulingId(reschedulingId === b.id ? null : b.id);
+                      setNewDate(b.date.split("T")[0]);
+                      setNewTime(b.startTime);
+                    }}
+                    className="rounded-full border-2 border-charcoal/20 px-4 py-2 text-xs font-bold text-charcoal/60 hover:bg-charcoal/5"
+                  >
+                    تعديل الموعد
+                  </button>
+                </>
+              )}
               {(b.status === "PENDING" || b.status === "CONFIRMED") && (
                 <button
                   onClick={() => updateStatus(b.id, "CANCELLED")}
@@ -152,6 +191,19 @@ export default function BookingsPage() {
                 واتساب
               </a>
             </div>
+          </div>
+          {reschedulingId === b.id && (
+            <div className="flex flex-wrap items-center gap-2 border-t border-charcoal/10 pt-3">
+              <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="input-field w-auto !py-2 text-sm" />
+              <input type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} className="input-field w-auto !py-2 text-sm" />
+              <button onClick={() => submitReschedule(b.id)} className="btn-primary !py-2 text-xs">
+                حفظ الموعد الجديد
+              </button>
+              <button onClick={() => setReschedulingId(null)} className="text-xs text-charcoal/40">
+                إلغاء
+              </button>
+            </div>
+          )}
           </div>
         ))}
         {!loading && bookings.length === 0 && <p className="text-charcoal/50">لا توجد حجوزات</p>}

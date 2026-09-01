@@ -5,7 +5,10 @@ import {
   buildWhatsAppLink,
   sendWhatsAppMessage,
   bookingConfirmedCustomerMessage,
-  bookingRejectedCustomerMessage
+  bookingRejectedCustomerMessage,
+  bookingCancelledCustomerMessage,
+  bookingRescheduledCustomerMessage,
+  reviewRequestMessage
 } from "@/lib/whatsapp";
 import { formatArabicDate } from "@/lib/utils";
 import { z } from "zod";
@@ -41,6 +44,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const { status, date, startTime, endTime, verifyPayment } = parsed.data;
+
+  const original = await prisma.booking.findUnique({ where: { id: params.id } });
+  const isReschedule = !!(date || startTime || endTime) && !status;
 
   const booking = await prisma.booking.update({
     where: { id: params.id },
@@ -80,6 +86,26 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
 
+  if (status === "COMPLETED") {
+    await prisma.notification.create({
+      data: {
+        title: "تم الانتهاء من الخدمة",
+        body: `${booking.customer.name} — ${booking.bookingNumber}`,
+        type: "COMPLETED",
+        bookingId: booking.id
+      }
+    });
+    const reviewUrl = `${req.nextUrl.origin}/review?booking=${booking.bookingNumber}`;
+    const message = reviewRequestMessage({ bookingNumber: booking.bookingNumber, reviewUrl });
+    const sent = await sendWhatsAppMessage(booking.customer.phone, message);
+    if (!sent) {
+      return NextResponse.json({
+        booking,
+        whatsappLink: buildWhatsAppLink(booking.customer.phone, message)
+      });
+    }
+  }
+
   if (status === "REJECTED") {
     await prisma.notification.create({
       data: {
@@ -108,6 +134,31 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         bookingId: booking.id
       }
     });
+    const message = bookingCancelledCustomerMessage({ bookingNumber: booking.bookingNumber });
+    const sent = await sendWhatsAppMessage(booking.customer.phone, message);
+    if (!sent) {
+      return NextResponse.json({
+        booking,
+        whatsappLink: buildWhatsAppLink(booking.customer.phone, message)
+      });
+    }
+  }
+
+  // Reschedule: date/time changed without an explicit status change.
+  if (isReschedule && original && (original.date.getTime() !== booking.date.getTime() || original.startTime !== booking.startTime)) {
+    const message = bookingRescheduledCustomerMessage({
+      bookingNumber: booking.bookingNumber,
+      serviceName: booking.service.name,
+      dateLabel: formatArabicDate(booking.date),
+      timeLabel: booking.startTime
+    });
+    const sent = await sendWhatsAppMessage(booking.customer.phone, message);
+    if (!sent) {
+      return NextResponse.json({
+        booking,
+        whatsappLink: buildWhatsAppLink(booking.customer.phone, message)
+      });
+    }
   }
 
   return NextResponse.json({ booking });

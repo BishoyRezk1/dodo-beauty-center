@@ -8,6 +8,7 @@ interface Service {
   name: string;
   slug: string;
   description: string | null;
+  imageUrl: string | null;
   price: string;
   discountPrice: string | null;
   durationMin: number;
@@ -18,6 +19,7 @@ const emptyForm = {
   name: "",
   slug: "",
   description: "",
+  imageUrl: "",
   price: "",
   discountPrice: "",
   durationMin: "60"
@@ -29,6 +31,7 @@ export default function ServicesAdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   async function load() {
     const res = await fetch("/api/services?all=1");
@@ -51,6 +54,7 @@ export default function ServicesAdminPage() {
       name: s.name,
       slug: s.slug,
       description: s.description || "",
+      imageUrl: s.imageUrl || "",
       price: s.price,
       discountPrice: s.discountPrice || "",
       durationMin: String(s.durationMin)
@@ -67,6 +71,7 @@ export default function ServicesAdminPage() {
       name: form.name,
       slug: form.slug || form.name.toLowerCase().replace(/\s+/g, "-"),
       description: form.description || undefined,
+      imageUrl: form.imageUrl || undefined,
       price: parseFloat(form.price),
       discountPrice: form.discountPrice ? parseFloat(form.discountPrice) : null,
       durationMin: parseInt(form.durationMin, 10)
@@ -83,6 +88,21 @@ export default function ServicesAdminPage() {
     }
     setShowForm(false);
     load();
+  }
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok) setForm((f) => ({ ...f, imageUrl: data.url }));
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function toggleActive(s: Service) {
@@ -125,6 +145,16 @@ export default function ServicesAdminPage() {
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             className="input-field"
           />
+          <label className="cursor-pointer rounded-xl border-2 border-dashed border-wine/40 p-4 text-center text-sm">
+            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            {uploading ? (
+              <span className="text-charcoal/50">جاري الرفع...</span>
+            ) : form.imageUrl ? (
+              <img src={form.imageUrl} alt="" className="mx-auto max-h-24 rounded-lg" />
+            ) : (
+              <span className="text-wine">📷 صورة الخدمة (اختياري)</span>
+            )}
+          </label>
           <div className="grid grid-cols-3 gap-3">
             <input
               placeholder="السعر"
@@ -164,8 +194,11 @@ export default function ServicesAdminPage() {
 
       <div className="flex flex-col gap-3">
         {services.map((s) => (
-          <div key={s.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
-            <div>
+          <div key={s.id} className="card flex flex-wrap items-center gap-3 p-4">
+            {s.imageUrl && (
+              <div className="h-14 w-14 shrink-0 rounded-lg bg-cover bg-center" style={{ backgroundImage: `url(${s.imageUrl})` }} />
+            )}
+            <div className="flex-1">
               <p className="font-bold text-charcoal">
                 {s.name} {!s.isActive && <span className="text-xs text-red-500">(غير مفعّلة)</span>}
               </p>

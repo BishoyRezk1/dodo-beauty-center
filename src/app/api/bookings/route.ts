@@ -28,7 +28,8 @@ const bookingSchema = z.object({
   date: z.string(),
   time: z.string(),
   notes: z.string().optional(),
-  screenshotUrl: z.string().min(1, "صورة إثبات التحويل مطلوبة")
+  screenshotUrl: z.string().min(1, "صورة إثبات التحويل مطلوبة"),
+  couponCode: z.string().optional()
 });
 
 // POST /api/bookings — public: submit a new booking request
@@ -39,11 +40,28 @@ export async function POST(req: NextRequest) {
     const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
     return NextResponse.json({ error: firstError || "بيانات غير صحيحة" }, { status: 400 });
   }
-  const { name, phone, serviceId, date, time, notes, screenshotUrl } = parsed.data;
+  const { name, phone, serviceId, date, time, notes, screenshotUrl, couponCode } = parsed.data;
 
   const service = await prisma.service.findUnique({ where: { id: serviceId } });
   if (!service || !service.isActive) {
     return NextResponse.json({ error: "الخدمة غير متاحة" }, { status: 404 });
+  }
+
+  // Re-validate the coupon server-side (never trust a client-supplied discount).
+  let appliedCoupon: { id: string; code: string; discountPercent: number } | null = null;
+  if (couponCode) {
+    const code = couponCode.toUpperCase().trim();
+    const coupon = await prisma.coupon.findUnique({ where: { code } });
+    const now = new Date();
+    const usable =
+      coupon &&
+      coupon.isActive &&
+      (!coupon.expiresAt || coupon.expiresAt >= now) &&
+      (coupon.maxUses === null || coupon.usedCount < coupon.maxUses) &&
+      (!coupon.serviceId || coupon.serviceId === serviceId);
+    if (usable && coupon) {
+      appliedCoupon = { id: coupon.id, code: coupon.code, discountPercent: coupon.discountPercent };
+    }
   }
 
   const bookingDate = new Date(`${date}T00:00:00`);
@@ -56,7 +74,10 @@ export async function POST(req: NextRequest) {
 
   const feeType = await getSetting(SETTING_KEYS.FEE_TYPE);
   const feeValue = parseFloat(await getSetting(SETTING_KEYS.FEE_VALUE));
-  const feeAmount = calculateFee(Number(service.discountPrice ?? service.price), feeType, feeValue);
+  let feeAmount = calculateFee(Number(service.discountPrice ?? service.price), feeType, feeValue);
+  if (appliedCoupon) {
+    feeAmount = Math.round(feeAmount * (1 - appliedCoupon.discountPercent / 100) * 100) / 100;
+  }
   const maxConcurrent = parseInt(await getSetting(SETTING_KEYS.MAX_CONCURRENT_BOOKINGS), 10) || 1;
 
   // Re-check slot availability at submission time to prevent double booking
@@ -104,6 +125,8 @@ export async function POST(req: NextRequest) {
         endTime,
         notes,
         feeAmount,
+        couponCode: appliedCoupon?.code,
+        discountPercent: appliedCoupon?.discountPercent,
         status: "PENDING",
         payment: {
           create: {
@@ -125,6 +148,13 @@ export async function POST(req: NextRequest) {
         bookingId: created.id
       }
     });
+
+    if (appliedCoupon) {
+      await tx.coupon.update({
+        where: { id: appliedCoupon.id },
+        data: { usedCount: { increment: 1 } }
+      });
+    }
 
     return created;
   }).catch((err) => {

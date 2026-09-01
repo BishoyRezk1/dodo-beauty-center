@@ -18,7 +18,11 @@ export const SETTING_KEYS = {
   MAP_LAT: "map_lat",
   MAP_LNG: "map_lng",
   MAP_URL: "map_url",
-  MAX_CONCURRENT_BOOKINGS: "max_concurrent_bookings"
+  MAX_CONCURRENT_BOOKINGS: "max_concurrent_bookings",
+  INSTAGRAM_URL: "instagram_url",
+  FACEBOOK_URL: "facebook_url",
+  TIKTOK_URL: "tiktok_url",
+  CRON_SECRET: "cron_secret"
 } as const;
 
 const DEFAULTS: Record<string, string> = {
@@ -33,7 +37,10 @@ const DEFAULTS: Record<string, string> = {
   [SETTING_KEYS.MAP_LAT]: "30.0444",
   [SETTING_KEYS.MAP_LNG]: "31.2357",
   [SETTING_KEYS.MAP_URL]: "https://maps.google.com",
-  [SETTING_KEYS.MAX_CONCURRENT_BOOKINGS]: "1"
+  [SETTING_KEYS.MAX_CONCURRENT_BOOKINGS]: "1",
+  [SETTING_KEYS.INSTAGRAM_URL]: "",
+  [SETTING_KEYS.FACEBOOK_URL]: "",
+  [SETTING_KEYS.TIKTOK_URL]: ""
 };
 
 export async function getSetting(key: string): Promise<string> {

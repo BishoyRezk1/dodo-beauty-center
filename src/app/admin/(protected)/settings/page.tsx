@@ -271,6 +271,33 @@ export default function SettingsAdminPage() {
       </div>
 
       <div className="card mb-6 p-5">
+        <h2 className="mb-4 font-bold text-charcoal">📱 روابط السوشيال ميديا</h2>
+        <div className="flex flex-col gap-3">
+          <input
+            className="input-field"
+            dir="ltr"
+            placeholder="رابط Instagram"
+            value={settings.instagram_url || ""}
+            onChange={(e) => set("instagram_url", e.target.value)}
+          />
+          <input
+            className="input-field"
+            dir="ltr"
+            placeholder="رابط Facebook"
+            value={settings.facebook_url || ""}
+            onChange={(e) => set("facebook_url", e.target.value)}
+          />
+          <input
+            className="input-field"
+            dir="ltr"
+            placeholder="رابط TikTok"
+            value={settings.tiktok_url || ""}
+            onChange={(e) => set("tiktok_url", e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="card mb-6 p-5">
         <h2 className="mb-4 font-bold text-charcoal">📅 الحجوزات</h2>
         <label className="mb-1 block text-sm text-charcoal/60">عدد الحجوزات المسموح بها في نفس الوقت</label>
         <input

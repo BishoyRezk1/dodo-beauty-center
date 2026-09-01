@@ -6,6 +6,7 @@ import Link from "next/link";
 const links = [
   { href: "#services", label: "الخدمات" },
   { href: "#offers", label: "العروض" },
+  { href: "#gallery", label: "أعمالنا" },
   { href: "#reviews", label: "آراء العملاء" },
   { href: "#location", label: "موقعنا" }
 ];
