@@ -10,6 +10,12 @@ import LocationSection from "@/components/site/LocationSection";
 import Footer from "@/components/site/Footer";
 import WhatsAppFloatButton from "@/components/site/WhatsAppFloatButton";
 
+// Always fetch fresh data from the database — without this, Next.js would
+// bake the homepage (services, offers, gallery, reviews) into a static
+// snapshot at deploy time, so anything added later from the admin
+// dashboard wouldn't show up until the next deploy.
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const settings = await getSettings();
   const whatsappHref = buildWhatsAppLink(

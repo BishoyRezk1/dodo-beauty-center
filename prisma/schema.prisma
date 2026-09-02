@@ -40,6 +40,8 @@ model Customer {
   phone         String    @unique
   bookings      Booking[]
   totalPaid     Decimal   @default(0) @db.Decimal(10, 2)
+  notes         String?
+  isBlocked     Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -53,6 +55,7 @@ model Service {
   price         Decimal   @db.Decimal(10, 2)
   discountPrice Decimal?  @db.Decimal(10, 2)
   durationMin   Int       @default(60)
+  bufferMin     Int       @default(0)
   isActive      Boolean   @default(true)
   sortOrder     Int       @default(0)
   bookings      Booking[]

@@ -31,8 +31,21 @@ function getCloudApiConfig(): CloudApiConfig | null {
   return { phoneNumberId, accessToken };
 }
 
+/**
+ * Normalizes a phone number to WhatsApp's expected international format.
+ * Egyptian numbers are usually entered locally (e.g. "01210111630"); WhatsApp
+ * requires the country code instead of the leading 0 (e.g. "201210111630").
+ */
+export function normalizePhoneForWhatsApp(phone: string): string {
+  const digits = phone.replace(/[^0-9]/g, "");
+  if (digits.startsWith("0")) return `20${digits.slice(1)}`;
+  if (digits.startsWith("20")) return digits;
+  // Already has some other country code, or is unusually short — leave as is.
+  return digits;
+}
+
 export function buildWhatsAppLink(phone: string, message: string): string {
-  const cleanPhone = phone.replace(/[^0-9]/g, "");
+  const cleanPhone = normalizePhoneForWhatsApp(phone);
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }
 
@@ -77,6 +90,7 @@ export function newBookingAdminMessage(params: {
   dateLabel: string;
   timeLabel: string;
   feeAmount: number;
+  screenshotUrl?: string;
 }) {
   return `🔔 حجز جديد — DoDo Beauty Center
 
@@ -87,7 +101,7 @@ export function newBookingAdminMessage(params: {
 التاريخ: ${params.dateLabel}
 الوقت: ${params.timeLabel}
 رسوم الحجز: ${params.feeAmount} جنيه
-حالة الدفع: في انتظار المراجعة`;
+حالة الدفع: في انتظار المراجعة${params.screenshotUrl ? `\nصورة التحويل: ${params.screenshotUrl}` : ""}`;
 }
 
 export function bookingConfirmedCustomerMessage(params: {

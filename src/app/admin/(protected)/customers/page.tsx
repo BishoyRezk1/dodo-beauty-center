@@ -13,6 +13,8 @@ interface Customer {
   id: string;
   name: string;
   phone: string;
+  notes: string | null;
+  isBlocked: boolean;
   bookingsCount: number;
   lastBooking: string | null;
   totalPaid: number;
@@ -32,19 +34,42 @@ export default function CustomersPage() {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+
+  async function load() {
+    const res = await fetch("/api/customers");
+    const data = await res.json();
+    setCustomers(data);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    fetch("/api/customers")
-      .then((r) => r.json())
-      .then((data) => {
-        setCustomers(data);
-        setLoading(false);
-      });
+    load();
   }, []);
 
   const filtered = customers.filter(
     (c) => c.name.includes(search) || c.phone.includes(search)
   );
+
+  async function saveNote(id: string) {
+    const notes = noteDrafts[id] ?? "";
+    await fetch(`/api/customers/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes: notes.trim() || null })
+    });
+    load();
+  }
+
+  async function toggleBlocked(c: Customer) {
+    if (!c.isBlocked && !confirm(`هل تريدين حظر ${c.name}؟ لن تستطيع حجز مواعيد جديدة.`)) return;
+    await fetch(`/api/customers/${c.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isBlocked: !c.isBlocked })
+    });
+    load();
+  }
 
   return (
     <div>
@@ -61,13 +86,15 @@ export default function CustomersPage() {
 
       <div className="flex flex-col gap-3">
         {filtered.map((c) => (
-          <div key={c.id} className="card p-4">
+          <div key={c.id} className={`card p-4 ${c.isBlocked ? "border-red-300 bg-red-50/40" : ""}`}>
             <button
               onClick={() => setExpanded(expanded === c.id ? null : c.id)}
               className="flex w-full items-center justify-between text-right"
             >
               <div>
-                <p className="font-bold text-charcoal">{c.name}</p>
+                <p className="font-bold text-charcoal">
+                  {c.name} {c.isBlocked && <span className="text-xs text-red-500">(محظورة)</span>}
+                </p>
                 <p dir="ltr" className="text-sm text-charcoal/50">
                   {c.phone}
                 </p>
@@ -90,7 +117,7 @@ export default function CustomersPage() {
                 <p className="mb-2 text-xs text-charcoal/40">
                   آخر حجز: {c.lastBooking ? formatArabicDate(c.lastBooking) : "—"}
                 </p>
-                <div className="flex flex-col gap-2">
+                <div className="mb-3 flex flex-col gap-2">
                   {c.bookings.map((b) => (
                     <div key={b.bookingNumber} className="flex justify-between text-sm">
                       <span className="font-mono text-xs text-charcoal/50">{b.bookingNumber}</span>
@@ -99,6 +126,29 @@ export default function CustomersPage() {
                       <span className="text-charcoal/50">{statusLabels[b.status]}</span>
                     </div>
                   ))}
+                </div>
+
+                <label className="mb-1 block text-xs font-bold text-charcoal/60">ملاحظات (اختياري)</label>
+                <textarea
+                  value={noteDrafts[c.id] ?? c.notes ?? ""}
+                  onChange={(e) => setNoteDrafts((d) => ({ ...d, [c.id]: e.target.value }))}
+                  placeholder="أي ملاحظة خاصة بالعميلة..."
+                  className="input-field mb-2 min-h-16 text-sm"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => saveNote(c.id)} className="btn-primary !py-1.5 text-xs">
+                    حفظ الملاحظة
+                  </button>
+                  <button
+                    onClick={() => toggleBlocked(c)}
+                    className={`rounded-full border-2 px-4 py-1.5 text-xs font-bold ${
+                      c.isBlocked
+                        ? "border-emerald-400 text-emerald-600"
+                        : "border-red-400 text-red-500"
+                    }`}
+                  >
+                    {c.isBlocked ? "فك الحظر" : "حظر العميلة"}
+                  </button>
                 </div>
               </div>
             )}

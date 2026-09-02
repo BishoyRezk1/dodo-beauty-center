@@ -47,6 +47,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "الخدمة غير متاحة" }, { status: 404 });
   }
 
+  // Blocked customers can't create new bookings.
+  const existingCustomer = await prisma.customer.findUnique({ where: { phone } });
+  if (existingCustomer?.isBlocked) {
+    return NextResponse.json(
+      { error: "لا يمكن إتمام الحجز، برجاء التواصل معنا مباشرة على واتساب." },
+      { status: 403 }
+    );
+  }
+
   // Re-validate the coupon server-side (never trust a client-supplied discount).
   let appliedCoupon: { id: string; code: string; discountPercent: number } | null = null;
   if (couponCode) {
@@ -90,7 +99,7 @@ export async function POST(req: NextRequest) {
         date: { gte: dayStart, lte: dayEnd },
         status: { in: ["PENDING", "CONFIRMED"] }
       },
-      select: { startTime: true, endTime: true }
+      select: { startTime: true, endTime: true, service: { select: { bufferMin: true } } }
     });
 
     const toMin = (v: string) => {
@@ -99,7 +108,7 @@ export async function POST(req: NextRequest) {
     };
     const overlapCount = overlapping.filter((b) => {
       const bStart = toMin(b.startTime);
-      const bEnd = toMin(b.endTime);
+      const bEnd = toMin(b.endTime) + (b.service?.bufferMin || 0);
       return startMinutes < bEnd && endMinutes > bStart;
     }).length;
 
@@ -179,7 +188,8 @@ export async function POST(req: NextRequest) {
     serviceName: booking.service.name,
     dateLabel: formatArabicDate(bookingDate),
     timeLabel: time,
-    feeAmount
+    feeAmount,
+    screenshotUrl
   });
   sendWhatsAppMessage(shopNumber, message).catch(() => {});
 

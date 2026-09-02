@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatEGP, formatArabicDate } from "@/lib/utils";
+import { normalizePhoneForWhatsApp } from "@/lib/whatsapp";
 
 interface Booking {
   id: string;
@@ -183,7 +184,7 @@ export default function BookingsPage() {
                 </button>
               )}
               <a
-                href={`https://wa.me/${b.customer.phone.replace(/[^0-9]/g, "")}`}
+                href={`https://wa.me/${normalizePhoneForWhatsApp(b.customer.phone)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="rounded-full border-2 border-[#25D366] px-4 py-2 text-xs font-bold text-[#25D366] hover:bg-[#25D366]/10"

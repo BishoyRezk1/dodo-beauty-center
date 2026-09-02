@@ -12,6 +12,7 @@ interface Service {
   price: string;
   discountPrice: string | null;
   durationMin: number;
+  bufferMin: number;
   isActive: boolean;
 }
 
@@ -22,7 +23,8 @@ const emptyForm = {
   imageUrl: "",
   price: "",
   discountPrice: "",
-  durationMin: "60"
+  durationMin: "60",
+  bufferMin: "0"
 };
 
 export default function ServicesAdminPage() {
@@ -57,7 +59,8 @@ export default function ServicesAdminPage() {
       imageUrl: s.imageUrl || "",
       price: s.price,
       discountPrice: s.discountPrice || "",
-      durationMin: String(s.durationMin)
+      durationMin: String(s.durationMin),
+      bufferMin: String(s.bufferMin ?? 0)
     });
     setEditingId(s.id);
     setShowForm(true);
@@ -74,7 +77,8 @@ export default function ServicesAdminPage() {
       imageUrl: form.imageUrl || undefined,
       price: parseFloat(form.price),
       discountPrice: form.discountPrice ? parseFloat(form.discountPrice) : null,
-      durationMin: parseInt(form.durationMin, 10)
+      durationMin: parseInt(form.durationMin, 10),
+      bufferMin: parseInt(form.bufferMin || "0", 10)
     };
 
     const res = await fetch(editingId ? `/api/services/${editingId}` : "/api/services", {
@@ -180,6 +184,19 @@ export default function ServicesAdminPage() {
               required
             />
           </div>
+          <div>
+            <label className="mb-1 block text-xs text-charcoal/50">
+              فترة راحة إجبارية بعد الخدمة (دقيقة) — مفيش حجز جديد قبلها تخلص
+            </label>
+            <input
+              placeholder="مثال: 60"
+              type="number"
+              min={0}
+              value={form.bufferMin}
+              onChange={(e) => setForm({ ...form, bufferMin: e.target.value })}
+              className="input-field"
+            />
+          </div>
           {error && <p className="text-sm font-bold text-red-600">{error}</p>}
           <div className="flex gap-3">
             <button type="submit" className="btn-primary !py-2 text-sm">
@@ -204,6 +221,7 @@ export default function ServicesAdminPage() {
               </p>
               <p className="text-sm text-charcoal/50">
                 {formatEGP(s.discountPrice ?? s.price)} · {s.durationMin} دقيقة
+                {s.bufferMin > 0 && ` · راحة ${s.bufferMin} دقيقة`}
               </p>
             </div>
             <div className="flex gap-2">

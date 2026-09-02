@@ -21,6 +21,7 @@ const serviceSchema = z.object({
   price: z.number().positive(),
   discountPrice: z.number().positive().optional().nullable(),
   durationMin: z.number().int().positive(),
+  bufferMin: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
   sortOrder: z.number().int().optional()
 });

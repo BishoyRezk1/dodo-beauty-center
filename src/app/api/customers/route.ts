@@ -27,6 +27,8 @@ export async function GET() {
       id: c.id,
       name: c.name,
       phone: c.phone,
+      notes: c.notes,
+      isBlocked: c.isBlocked,
       bookingsCount: c.bookings.length,
       lastBooking: c.bookings[0]?.date ?? null,
       totalPaid,

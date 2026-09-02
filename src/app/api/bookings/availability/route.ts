@@ -53,7 +53,10 @@ export async function GET(req: NextRequest) {
   const duration = service.durationMin;
   const step = 30; // slot granularity in minutes
 
-  // Existing bookings for that day that still hold a slot
+  // Existing bookings for that day that still hold a slot — include each
+  // booking's own service buffer time, since a gap is needed after a
+  // service (e.g. facial cleaning) before the next appointment can start,
+  // regardless of which service that next appointment is for.
   const dayStartDate = new Date(`${dateStr}T00:00:00`);
   const dayEndDate = new Date(`${dateStr}T23:59:59`);
   const existing = await prisma.booking.findMany({
@@ -61,7 +64,7 @@ export async function GET(req: NextRequest) {
       date: { gte: dayStartDate, lte: dayEndDate },
       status: { in: ["PENDING", "CONFIRMED"] }
     },
-    select: { startTime: true, endTime: true }
+    select: { startTime: true, endTime: true, service: { select: { bufferMin: true } } }
   });
 
   const slots: string[] = [];
@@ -74,7 +77,7 @@ export async function GET(req: NextRequest) {
 
     const overlapCount = existing.filter((b) => {
       const bStart = toMinutes(b.startTime);
-      const bEnd = toMinutes(b.endTime);
+      const bEnd = toMinutes(b.endTime) + (b.service?.bufferMin || 0);
       return start < bEnd && end > bStart;
     }).length;
 
