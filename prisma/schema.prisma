@@ -49,13 +49,16 @@ model Customer {
 model Service {
   id            String    @id @default(cuid())
   name          String
+  nameEn        String?
   slug          String    @unique
+  category      String    @default("general")
   description   String?
   imageUrl      String?
   price         Decimal   @db.Decimal(10, 2)
   discountPrice Decimal?  @db.Decimal(10, 2)
   durationMin   Int       @default(60)
   bufferMin     Int       @default(0)
+  status        ServiceStatus @default(AVAILABLE)
   isActive      Boolean   @default(true)
   sortOrder     Int       @default(0)
   bookings      Booking[]
@@ -63,6 +66,12 @@ model Service {
   coupons       Coupon[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+enum ServiceStatus {
+  AVAILABLE
+  COMING_SOON
+  HIDDEN
 }
 
 model Offer {
