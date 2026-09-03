@@ -56,7 +56,10 @@ export default function BookingFlow() {
       setSettings(st);
       if (preselected) {
         const found = svc.find((s: Service) => s.id === preselected);
-        if (found) setSelectedService(found);
+        if (found) {
+          setSelectedService(found);
+          setStep("datetime");
+        }
       }
     });
   }, [preselected]);
