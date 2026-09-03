@@ -146,7 +146,7 @@ export default function BookingFlow() {
       return;
     }
 
-    const whatsappNumber = "201210111630";
+    const whatsappNumber = "201001821352";
 
     const message = [
       "مرحبًا DoDo Beauty Center 🌸",
