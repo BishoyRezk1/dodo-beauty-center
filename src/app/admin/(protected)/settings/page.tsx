@@ -117,6 +117,13 @@ export default function SettingsAdminPage() {
             value={settings.site_tagline || ""}
             onChange={(e) => set("site_tagline", e.target.value)}
           />
+          <input
+            className="input-field"
+            dir="ltr"
+            placeholder="رابط Facebook"
+            value={settings.facebook_url || ""}
+            onChange={(e) => set("facebook_url", e.target.value)}
+          />
         </div>
       </div>
 
