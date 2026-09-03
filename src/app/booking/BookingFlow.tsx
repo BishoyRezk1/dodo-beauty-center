@@ -129,6 +129,23 @@ export default function BookingFlow() {
   }
 
   function openWhatsAppBooking() {
+    setError(null);
+
+    if (!selectedService) {
+      setError("من فضلك اختر الخدمة أولاً");
+      return;
+    }
+
+    if (!name.trim()) {
+      setError("من فضلك اكتب اسمك أولاً");
+      return;
+    }
+
+    if (!phone.trim()) {
+      setError("من فضلك اكتب رقم الهاتف أولاً");
+      return;
+    }
+
     const whatsappNumber = "201210111630";
 
     const message = [
@@ -136,20 +153,20 @@ export default function BookingFlow() {
       "",
       "أريد حجز موعد عن طريق الواتساب.",
       "",
-      `الاسم: ${name || "غير محدد"}`,
-      `رقم الهاتف: ${phone || "غير محدد"}`,
-      `الخدمة: ${selectedService?.name || "غير محددة"}`,
-      `التاريخ: ${date || "غير محدد"}`,
-      `الوقت: ${time || "غير محدد"}`,
-      `ملاحظات: ${notes || "لا توجد"}`,
+      `الاسم: ${name.trim()}`,
+      `رقم الهاتف: ${phone.trim()}`,
+      `الخدمة: ${selectedService.name}`,
+      `التاريخ: ${date || "لم يتم تحديده"}`,
+      `الوقت: ${time || "لم يتم تحديده"}`,
+      `ملاحظات: ${notes.trim() || "لا توجد"}`,
       "",
-      "أرغب في تأكيد الحجز عن طريق الواتساب."
+      "أرغب في تأكيد الحجز عن طريق الواتساب. 💚"
     ].join("\n");
 
-    window.open(
-      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
-      "_blank"
-    );
+    const whatsappUrl =
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, "_blank");
   }
 
   async function handleSubmit() {
