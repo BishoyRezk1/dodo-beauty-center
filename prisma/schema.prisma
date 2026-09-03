@@ -58,7 +58,7 @@ model Service {
   discountPrice Decimal?  @db.Decimal(10, 2)
   durationMin   Int       @default(60)
   bufferMin     Int       @default(0)
-  status        ServiceStatus @default(AVAILABLE)
+  status        String    @default("AVAILABLE")
   isActive      Boolean   @default(true)
   sortOrder     Int       @default(0)
   bookings      Booking[]
@@ -68,11 +68,6 @@ model Service {
   updatedAt     DateTime  @updatedAt
 }
 
-enum ServiceStatus {
-  AVAILABLE
-  COMING_SOON
-  HIDDEN
-}
 
 model Offer {
   id          String   @id @default(cuid())
