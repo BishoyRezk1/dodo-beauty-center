@@ -86,7 +86,7 @@ export default async function ServicesSection() {
                   discountPrice={s.discountPrice == null ? null : Number(s.discountPrice)}
                   durationMin={s.durationMin}
                   imageUrl={s.imageUrl}
-                  status={s.status}
+                  status={s.status as "AVAILABLE" | "COMING_SOON" | "HIDDEN"}
                 />
               ))}
             </div>
