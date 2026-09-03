@@ -29,7 +29,8 @@ const bookingSchema = z.object({
   time: z.string(),
   notes: z.string().optional(),
   screenshotUrl: z.string().min(1, "صورة إثبات التحويل مطلوبة"),
-  couponCode: z.string().optional()
+  couponCode: z.string().optional(),
+  offerId: z.string().optional()
 });
 
 // POST /api/bookings — public: submit a new booking request
@@ -40,11 +41,33 @@ export async function POST(req: NextRequest) {
     const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
     return NextResponse.json({ error: firstError || "بيانات غير صحيحة" }, { status: 400 });
   }
-  const { name, phone, serviceId, date, time, notes, screenshotUrl, couponCode } = parsed.data;
+  const { name, phone, serviceId, date, time, notes, screenshotUrl, couponCode, offerId } = parsed.data;
 
   const service = await prisma.service.findUnique({ where: { id: serviceId } });
   if (!service || !service.isActive) {
     return NextResponse.json({ error: "الخدمة غير متاحة" }, { status: 404 });
+  }
+
+  // Re-validate the min/max advance-booking window server-side — never
+  // trust that the browser's slot list is still accurate by the time the
+  // request arrives.
+  const bookingDateTime = new Date(`${date}T${time}:00`);
+  const now = new Date();
+  const minAdvanceHours = parseFloat(await getSetting(SETTING_KEYS.MIN_ADVANCE_HOURS)) || 0;
+  const maxAdvanceDays = parseInt(await getSetting(SETTING_KEYS.MAX_ADVANCE_DAYS), 10) || 60;
+  const earliestAllowed = new Date(now.getTime() + minAdvanceHours * 60 * 60 * 1000);
+  const maxAllowed = new Date(new Date(now.toDateString()).getTime() + maxAdvanceDays * 24 * 60 * 60 * 1000);
+  if (bookingDateTime < earliestAllowed) {
+    return NextResponse.json(
+      { error: "برجاء اختيار موعد أبعد قليلاً — الحجز يحتاج وقتًا كافيًا للتجهيز." },
+      { status: 400 }
+    );
+  }
+  if (bookingDateTime > maxAllowed) {
+    return NextResponse.json(
+      { error: `الحجز متاح حتى ${maxAdvanceDays} يومًا مقدمًا فقط.` },
+      { status: 400 }
+    );
   }
 
   // Blocked customers can't create new bookings.
@@ -83,7 +106,25 @@ export async function POST(req: NextRequest) {
 
   const feeType = await getSetting(SETTING_KEYS.FEE_TYPE);
   const feeValue = parseFloat(await getSetting(SETTING_KEYS.FEE_VALUE));
-  let feeAmount = calculateFee(Number(service.discountPrice ?? service.price), feeType, feeValue);
+
+  // If the customer came from an active offer, price the booking off the
+  // offer's discounted price instead of the service's normal price.
+  let basePrice = Number(service.discountPrice ?? service.price);
+  if (offerId) {
+    const nowCheck = new Date();
+    const offer = await prisma.offer.findUnique({ where: { id: offerId } });
+    const offerUsable =
+      offer &&
+      offer.isActive &&
+      offer.startDate <= nowCheck &&
+      offer.endDate >= nowCheck &&
+      (!offer.serviceId || offer.serviceId === serviceId);
+    if (offerUsable && offer) {
+      basePrice = Number(offer.newPrice);
+    }
+  }
+
+  let feeAmount = calculateFee(basePrice, feeType, feeValue);
   if (appliedCoupon) {
     feeAmount = Math.round(feeAmount * (1 - appliedCoupon.discountPercent / 100) * 100) / 100;
   }

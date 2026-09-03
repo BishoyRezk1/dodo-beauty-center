@@ -18,11 +18,13 @@ type Step = "service" | "datetime" | "details" | "payment" | "done";
 export default function BookingFlow() {
   const searchParams = useSearchParams();
   const preselected = searchParams.get("service");
+  const offerId = searchParams.get("offer");
 
   const [step, setStep] = useState<Step>("service");
   const [services, setServices] = useState<Service[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [offerPrice, setOfferPrice] = useState<number | null>(null);
 
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<string[]>([]);
@@ -60,6 +62,15 @@ export default function BookingFlow() {
   }, [preselected]);
 
   useEffect(() => {
+    if (!offerId) return;
+    fetch(`/api/offers/${offerId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((offer) => {
+        if (offer) setOfferPrice(Number(offer.newPrice));
+      });
+  }, [offerId]);
+
+  useEffect(() => {
     if (!date || !selectedService) return;
     setSlotsLoading(true);
     setTime("");
@@ -71,7 +82,7 @@ export default function BookingFlow() {
 
   const fee = useMemo(() => {
     if (!selectedService) return 0;
-    const price = Number(selectedService.discountPrice ?? selectedService.price);
+    const price = offerPrice ?? Number(selectedService.discountPrice ?? selectedService.price);
     const feeType = settings.fee_type || "FIXED";
     const feeValue = parseFloat(settings.fee_value || "0");
     let amount = feeType === "PERCENT" ? Math.round(((price * feeValue) / 100) * 100) / 100 : feeValue;
@@ -79,7 +90,7 @@ export default function BookingFlow() {
       amount = Math.round(amount * (1 - couponDiscount / 100) * 100) / 100;
     }
     return amount;
-  }, [selectedService, settings, couponDiscount]);
+  }, [selectedService, settings, couponDiscount, offerPrice]);
 
   async function applyCoupon() {
     if (!couponCode.trim() || !selectedService) return;
@@ -103,6 +114,8 @@ export default function BookingFlow() {
   }
 
   const minDate = new Date().toISOString().split("T")[0];
+  const maxAdvanceDays = parseInt(settings.max_advance_days || "60", 10);
+  const maxDate = new Date(Date.now() + maxAdvanceDays * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -134,7 +147,8 @@ export default function BookingFlow() {
           time,
           notes,
           screenshotUrl: uploadData.url,
-          couponCode: couponDiscount ? couponCode : undefined
+          couponCode: couponDiscount ? couponCode : undefined,
+          offerId: offerPrice !== null ? offerId : undefined
         })
       });
       const bookingData = await bookingRes.json();
@@ -201,6 +215,7 @@ export default function BookingFlow() {
           <input
             type="date"
             min={minDate}
+            max={maxDate}
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="input-field mb-6"
@@ -287,6 +302,9 @@ export default function BookingFlow() {
 
           <div className="card mb-6 p-5 text-center">
             <p className="text-sm text-charcoal/60">المبلغ المطلوب</p>
+            {offerPrice !== null && (
+              <p className="mb-1 text-xs font-bold text-emerald-600">✓ تم تطبيق سعر العرض</p>
+            )}
             <p className="font-display text-3xl font-extrabold text-wine">{formatEGP(fee)}</p>
             <p className="mt-3 text-sm text-charcoal/60">حولي إلى رقم فودافون كاش</p>
             <p dir="ltr" className="font-display text-2xl font-extrabold tracking-widest text-charcoal">

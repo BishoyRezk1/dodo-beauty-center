@@ -32,6 +32,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "تاريخ غير صالح" }, { status: 400 });
   }
 
+  const now = new Date();
+  const minAdvanceHours = parseFloat(await getSetting(SETTING_KEYS.MIN_ADVANCE_HOURS)) || 0;
+  const maxAdvanceDays = parseInt(await getSetting(SETTING_KEYS.MAX_ADVANCE_DAYS), 10) || 60;
+
+  // Reject dates in the past outright.
+  const todayStart = new Date(now.toDateString());
+  if (date < todayStart) {
+    return NextResponse.json({ slots: [], reason: "لا يمكن الحجز في تاريخ سابق" });
+  }
+
+  // Reject dates beyond the admin's max-advance-booking window.
+  const maxDate = new Date(todayStart.getTime() + maxAdvanceDays * 24 * 60 * 60 * 1000);
+  if (date > maxDate) {
+    return NextResponse.json({ slots: [], reason: `الحجز متاح حتى ${maxAdvanceDays} يومًا مقدمًا فقط` });
+  }
+
   // Closed date check (holiday/day off)
   const closed = await prisma.closedDate.findUnique({ where: { date } });
   if (closed) {
@@ -51,7 +67,11 @@ export async function GET(req: NextRequest) {
   const breakStart = wh.breakStart ? toMinutes(wh.breakStart) : null;
   const breakEnd = wh.breakEnd ? toMinutes(wh.breakEnd) : null;
   const duration = service.durationMin;
+  const bufferMin = service.bufferMin || 0;
   const step = 30; // slot granularity in minutes
+
+  // Earliest bookable moment, honoring the admin's minimum-advance-notice rule.
+  const earliestAllowed = new Date(now.getTime() + minAdvanceHours * 60 * 60 * 1000);
 
   // Existing bookings for that day that still hold a slot — include each
   // booking's own service buffer time, since a gap is needed after a
@@ -68,11 +88,18 @@ export async function GET(req: NextRequest) {
   });
 
   const slots: string[] = [];
-  for (let start = dayStart; start + duration <= dayEnd; start += step) {
+  // The requested service's own prep/buffer time must also fit before
+  // closing — not just the service duration itself.
+  for (let start = dayStart; start + duration + bufferMin <= dayEnd; start += step) {
     const end = start + duration;
 
     if (breakStart !== null && breakEnd !== null && start < breakEnd && end > breakStart) {
       continue; // overlaps break time
+    }
+
+    const slotDateTime = new Date(dayStartDate.getTime() + start * 60 * 1000);
+    if (slotDateTime < earliestAllowed) {
+      continue; // too soon — violates minimum advance notice (or already in the past today)
     }
 
     const overlapCount = existing.filter((b) => {

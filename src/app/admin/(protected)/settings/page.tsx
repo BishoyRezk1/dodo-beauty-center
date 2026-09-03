@@ -301,11 +301,32 @@ export default function SettingsAdminPage() {
         <h2 className="mb-4 font-bold text-charcoal">📅 الحجوزات</h2>
         <label className="mb-1 block text-sm text-charcoal/60">عدد الحجوزات المسموح بها في نفس الوقت</label>
         <input
-          className="input-field"
+          className="input-field mb-4"
           type="number"
           min={1}
           value={settings.max_concurrent_bookings || "1"}
           onChange={(e) => set("max_concurrent_bookings", e.target.value)}
+        />
+        <label className="mb-1 block text-sm text-charcoal/60">
+          أقل مدة مسموح بها للحجز قبل الموعد (بالساعات) — مثال: 2 يعني ميقدرش يحجز قبل الميعاد بأقل من ساعتين
+        </label>
+        <input
+          className="input-field mb-4"
+          type="number"
+          min={0}
+          step={0.5}
+          value={settings.min_advance_hours || "0"}
+          onChange={(e) => set("min_advance_hours", e.target.value)}
+        />
+        <label className="mb-1 block text-sm text-charcoal/60">
+          أقصى عدد أيام مسموح الحجز بيها مقدمًا
+        </label>
+        <input
+          className="input-field"
+          type="number"
+          min={1}
+          value={settings.max_advance_days || "60"}
+          onChange={(e) => set("max_advance_days", e.target.value)}
         />
       </div>
 

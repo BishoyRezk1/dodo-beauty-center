@@ -1,12 +1,5 @@
 import { prisma } from "@/lib/prisma";
-
-const categoryLabels: Record<string, string> = {
-  hair: "تسريحات شعر",
-  coloring: "صبغات",
-  makeup: "ميكب",
-  skincare: "عناية بالبشرة",
-  before_after: "قبل وبعد"
-};
+import GalleryGrid from "./GalleryGrid";
 
 export default async function GallerySection() {
   const items = await prisma.galleryItem.findMany({
@@ -25,33 +18,7 @@ export default async function GallerySection() {
           شاهدي أحدث أعمالنا
         </h2>
       </div>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        {items.map((item) => (
-          <div key={item.id} className="group relative overflow-hidden rounded-xl2 shadow-soft">
-            {item.beforeUrl ? (
-              <div className="grid grid-cols-2">
-                <div
-                  className="aspect-square bg-cover bg-center"
-                  style={{ backgroundImage: `url(${item.beforeUrl})` }}
-                />
-                <div
-                  className="aspect-square bg-cover bg-center"
-                  style={{ backgroundImage: `url(${item.imageUrl})` }}
-                />
-              </div>
-            ) : (
-              <div
-                className="aspect-square bg-cover bg-center"
-                style={{ backgroundImage: `url(${item.imageUrl})` }}
-              />
-            )}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/70 to-transparent p-3">
-              <p className="text-xs font-bold text-white">{item.title}</p>
-              <p className="text-[10px] text-white/70">{categoryLabels[item.category] || item.category}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <GalleryGrid items={items} />
     </section>
   );
 }

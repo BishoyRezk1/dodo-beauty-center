@@ -11,24 +11,20 @@ interface GalleryItem {
   isActive: boolean;
 }
 
-const categories = [
-  { value: "hair", label: "تسريحات شعر" },
-  { value: "coloring", label: "صبغات" },
-  { value: "makeup", label: "ميكب" },
-  { value: "skincare", label: "عناية بالبشرة" },
-  { value: "before_after", label: "قبل وبعد" }
-];
+// Just suggestions for the datalist — the admin can type any category she wants.
+const categorySuggestions = ["تسريحات شعر", "صبغات", "هير جل", "ميكب", "عناية بالبشرة", "قبل وبعد"];
 
 export default function GalleryAdminPage() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("hair");
+  const [category, setCategory] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [beforeFile, setBeforeFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [beforePreview, setBeforePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
 
   async function load() {
     const res = await fetch("/api/gallery?all=1");
@@ -50,7 +46,7 @@ export default function GalleryAdminPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file || !title.trim()) return;
+    if (!file || !title.trim() || !category.trim()) return;
     setUploading(true);
     setError(null);
     try {
@@ -59,10 +55,11 @@ export default function GalleryAdminPage() {
       const res = await fetch("/api/gallery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, category, imageUrl, beforeUrl })
+        body: JSON.stringify({ title, category: category.trim(), imageUrl, beforeUrl })
       });
       if (!res.ok) throw new Error("فشل الحفظ");
       setTitle("");
+      setCategory("");
       setFile(null);
       setBeforeFile(null);
       setPreview(null);
@@ -102,13 +99,19 @@ export default function GalleryAdminPage() {
           className="input-field"
           required
         />
-        <select value={category} onChange={(e) => setCategory(e.target.value)} className="input-field">
-          {categories.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
-            </option>
+        <input
+          list="gallery-categories"
+          placeholder="التصنيف (اكتبي أي اسم تحبيه، مثال: هير جل)"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="input-field"
+          required
+        />
+        <datalist id="gallery-categories">
+          {categorySuggestions.map((c) => (
+            <option key={c} value={c} />
           ))}
-        </select>
+        </datalist>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="cursor-pointer rounded-xl border-2 border-dashed border-wine/40 p-4 text-center text-sm">
@@ -152,7 +155,11 @@ export default function GalleryAdminPage() {
         </div>
 
         {error && <p className="text-sm font-bold text-red-600">{error}</p>}
-        <button type="submit" disabled={uploading || !file || !title.trim()} className="btn-primary">
+        <button
+          type="submit"
+          disabled={uploading || !file || !title.trim() || !category.trim()}
+          className="btn-primary"
+        >
           {uploading ? "جاري الرفع..." : "إضافة للمعرض"}
         </button>
       </form>
@@ -160,15 +167,16 @@ export default function GalleryAdminPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {items.map((item) => (
           <div key={item.id} className="card overflow-hidden">
-            <div
-              className="h-28 bg-cover bg-center"
+            <button
+              type="button"
+              onClick={() => setLightbox(item)}
+              className="block h-28 w-full bg-cover bg-center"
               style={{ backgroundImage: `url(${item.imageUrl})` }}
+              aria-label="تكبير الصورة"
             />
             <div className="p-2">
               <p className="truncate text-xs font-bold text-charcoal">{item.title}</p>
-              <p className="mb-2 text-[10px] text-charcoal/40">
-                {categories.find((c) => c.value === item.category)?.label}
-              </p>
+              <p className="mb-2 truncate text-[10px] text-charcoal/40">{item.category}</p>
               <div className="flex gap-1">
                 <button
                   onClick={() => toggleActive(item)}
@@ -188,6 +196,24 @@ export default function GalleryAdminPage() {
         ))}
       </div>
       {items.length === 0 && <p className="text-charcoal/50">لا توجد أعمال مضافة بعد</p>}
+
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-black/80 p-6"
+          onClick={() => setLightbox(null)}
+        >
+          {lightbox.beforeUrl && (
+            <div className="flex gap-2">
+              <img src={lightbox.beforeUrl} alt="قبل" className="max-h-[40vh] rounded-xl" />
+              <img src={lightbox.imageUrl} alt="بعد" className="max-h-[40vh] rounded-xl" />
+            </div>
+          )}
+          {!lightbox.beforeUrl && (
+            <img src={lightbox.imageUrl} alt={lightbox.title} className="max-h-[80vh] max-w-full rounded-xl" />
+          )}
+          <p className="text-sm font-bold text-white">{lightbox.title} — {lightbox.category}</p>
+        </div>
+      )}
     </div>
   );
 }
