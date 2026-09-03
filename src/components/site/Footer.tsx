@@ -9,7 +9,7 @@ interface Props {
 export default function Footer({ siteName, whatsappHref, instagramUrl, facebookUrl, tiktokUrl }: Props) {
   const socials = [
     { url: instagramUrl, label: "Instagram", icon: "📷" },
-    { url: facebookUrl, label: "Facebook", icon: "📘" },
+    { url: facebookUrl, label: "Facebook", icon: "f" },
     { url: tiktokUrl, label: "TikTok", icon: "🎵" }
   ].filter((s) => s.url);
 
@@ -30,7 +30,7 @@ export default function Footer({ siteName, whatsappHref, instagramUrl, facebookU
                 target="_blank"
                 rel="noreferrer"
                 aria-label={s.label}
-                className="text-xl opacity-80 hover:opacity-100"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-xl font-bold text-white opacity-90 transition hover:scale-105 hover:opacity-100"
               >
                 {s.icon}
               </a>
