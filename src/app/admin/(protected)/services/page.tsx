@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatEGP } from "@/lib/utils";
+import { uploadImageDirect } from "@/lib/client-upload";
 
 interface Service {
   id: string;
@@ -99,11 +100,10 @@ export default function ServicesAdminPage() {
     if (!file) return;
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (res.ok) setForm((f) => ({ ...f, imageUrl: data.url }));
+      const url = await uploadImageDirect(file, "services");
+      setForm((f) => ({ ...f, imageUrl: url }));
+    } catch (err: any) {
+      alert(err.message || "فشل رفع الصورة");
     } finally {
       setUploading(false);
     }

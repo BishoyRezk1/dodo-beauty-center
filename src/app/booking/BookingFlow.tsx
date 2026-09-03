@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { formatEGP } from "@/lib/utils";
+import { uploadImageDirect } from "@/lib/client-upload";
 
 interface Service {
   id: string;
@@ -127,17 +128,37 @@ export default function BookingFlow() {
     setScreenshotPreview(URL.createObjectURL(file));
   }
 
+  function openWhatsAppBooking() {
+    const whatsappNumber = "201210111630";
+
+    const message = [
+      "مرحبًا DoDo Beauty Center 🌸",
+      "",
+      "أريد حجز موعد عن طريق الواتساب.",
+      "",
+      `الاسم: ${name || "غير محدد"}`,
+      `رقم الهاتف: ${phone || "غير محدد"}`,
+      `الخدمة: ${selectedService?.name || "غير محددة"}`,
+      `التاريخ: ${date || "غير محدد"}`,
+      `الوقت: ${time || "غير محدد"}`,
+      `ملاحظات: ${notes || "لا توجد"}`,
+      "",
+      "أرغب في تأكيد الحجز عن طريق الواتساب."
+    ].join("\n");
+
+    window.open(
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+  }
+
   async function handleSubmit() {
     if (!selectedService || !screenshotFile) return;
     setSubmitting(true);
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append("file", screenshotFile);
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) throw new Error(uploadData.error || "فشل رفع الصورة");
+      const screenshotUrl = await uploadImageDirect(screenshotFile, "payment-screenshots");
 
       const bookingRes = await fetch("/api/bookings", {
         method: "POST",
@@ -149,12 +170,19 @@ export default function BookingFlow() {
           date,
           time,
           notes,
-          screenshotUrl: uploadData.url,
+          screenshotUrl,
           couponCode: couponDiscount ? couponCode : undefined,
           offerId: offerPrice !== null ? offerId : undefined
         })
       });
-      const bookingData = await bookingRes.json();
+
+      const bookingText = await bookingRes.text();
+      let bookingData: any;
+      try {
+        bookingData = JSON.parse(bookingText);
+      } catch {
+        throw new Error("حدث خطأ في السيرفر، برجاء المحاولة مرة أخرى.");
+      }
       if (!bookingRes.ok) throw new Error(bookingData.error || "فشل إرسال طلب الحجز");
 
       setBookingNumber(bookingData.bookingNumber);
@@ -229,7 +257,21 @@ export default function BookingFlow() {
               <label className="mb-2 block text-sm font-bold text-charcoal/70">الوقت المتاح</label>
               {slotsLoading && <p className="text-sm text-charcoal/50">جاري تحميل المواعيد...</p>}
               {!slotsLoading && slots.length === 0 && (
-                <p className="text-sm text-wine">لا توجد مواعيد متاحة في هذا اليوم، برجاء اختيار يوم آخر.</p>
+                <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 p-5 text-center">
+                  <p className="text-base font-bold text-charcoal">
+                    لا توجد مواعيد متاحة في هذا اليوم
+                  </p>
+                  <p className="mt-2 text-sm text-charcoal/60">
+                    يمكنك التواصل معنا عبر واتساب لمعرفة أقرب موعد متاح وحجزه مباشرة.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={openWhatsAppBooking}
+                    className="mt-4 w-full rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700"
+                  >
+                    💬 احجز عن طريق واتساب
+                  </button>
+                </div>
               )}
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {slots.map((s) => (
@@ -302,6 +344,22 @@ export default function BookingFlow() {
         <div>
           <h2 className="mb-2 font-display text-2xl font-bold text-charcoal">رسوم تأكيد الحجز</h2>
           <p className="mb-6 text-charcoal/60">حولي رسوم الحجز عبر Vodafone Cash ثم ارفعي صورة إثبات التحويل</p>
+
+          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-5 text-center">
+            <p className="text-base font-bold text-charcoal">
+              مش قادر تعمل تحويل؟
+            </p>
+            <p className="mt-2 text-sm text-charcoal/60">
+              تقدر تتواصل معنا على واتساب وتطلب تأكيد الحجز مباشرة.
+            </p>
+            <button
+              type="button"
+              onClick={openWhatsAppBooking}
+              className="mt-4 w-full rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700"
+            >
+              💬 تأكيد الحجز عن طريق واتساب
+            </button>
+          </div>
 
           <div className="card mb-6 p-5 text-center">
             <p className="text-sm text-charcoal/60">المبلغ المطلوب</p>

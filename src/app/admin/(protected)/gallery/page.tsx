@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { uploadImageDirect } from "@/lib/client-upload";
 
 interface GalleryItem {
   id: string;
@@ -36,12 +37,7 @@ export default function GalleryAdminPage() {
   }, []);
 
   async function uploadFile(f: File): Promise<string> {
-    const formData = new FormData();
-    formData.append("file", f);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "فشل رفع الصورة");
-    return data.url;
+    return uploadImageDirect(f, "gallery");
   }
 
   async function handleSubmit(e: React.FormEvent) {
