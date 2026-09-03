@@ -274,20 +274,55 @@ export default function BookingFlow() {
               <label className="mb-2 block text-sm font-bold text-charcoal/70">الوقت المتاح</label>
               {slotsLoading && <p className="text-sm text-charcoal/50">جاري تحميل المواعيد...</p>}
               {!slotsLoading && slots.length === 0 && (
-                <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 p-5 text-center">
-                  <p className="text-base font-bold text-charcoal">
-                    لا توجد مواعيد متاحة في هذا اليوم
-                  </p>
-                  <p className="mt-2 text-sm text-charcoal/60">
-                    يمكنك التواصل معنا عبر واتساب لمعرفة أقرب موعد متاح وحجزه مباشرة.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={openWhatsAppBooking}
-                    className="mt-4 w-full rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700"
-                  >
-                    💬 احجز عن طريق واتساب
-                  </button>
+                <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 p-5">
+                  <div className="text-center">
+                    <p className="text-base font-bold text-charcoal">
+                      لا توجد مواعيد متاحة في هذا اليوم
+                    </p>
+                    <p className="mt-2 text-sm text-charcoal/60">
+                      يمكنك إرسال طلب الحجز عبر واتساب وسنتواصل معك لتأكيد أقرب موعد متاح.
+                    </p>
+                  </div>
+
+                  <div className="mt-5 flex flex-col gap-3">
+                    <input
+                      placeholder="الاسم بالكامل"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="input-field bg-white"
+                    />
+
+                    <input
+                      placeholder="رقم الهاتف"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="input-field bg-white"
+                      dir="ltr"
+                    />
+
+                    <textarea
+                      placeholder="ملاحظات (اختياري)"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="input-field min-h-20 bg-white"
+                    />
+
+                    {error && (
+                      <p className="text-center text-sm font-bold text-red-600">
+                        {error}
+                      </p>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={openWhatsAppBooking}
+                      disabled={!name.trim() || phone.trim().length < 8}
+                      className="w-full rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      💬 إرسال طلب الحجز عبر واتساب
+                    </button>
+                  </div>
                 </div>
               )}
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
