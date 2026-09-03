@@ -44,8 +44,16 @@ export async function POST(req: NextRequest) {
   const { name, phone, serviceId, date, time, notes, screenshotUrl, couponCode, offerId } = parsed.data;
 
   const service = await prisma.service.findUnique({ where: { id: serviceId } });
-  if (!service || !service.isActive) {
-    return NextResponse.json({ error: "الخدمة غير متاحة" }, { status: 404 });
+  if (
+    !service ||
+    !service.isActive ||
+    service.status !== "AVAILABLE" ||
+    Number(service.price) <= 0
+  ) {
+    return NextResponse.json(
+      { error: "الخدمة غير متاحة للحجز حاليًا" },
+      { status: 404 }
+    );
   }
 
   // Re-validate the min/max advance-booking window server-side — never

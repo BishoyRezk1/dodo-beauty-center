@@ -12,6 +12,7 @@ interface Service {
   discountPrice: string | null;
   durationMin: number;
   description: string | null;
+  status?: "AVAILABLE" | "COMING_SOON" | "HIDDEN";
 }
 
 type Step = "service" | "datetime" | "details" | "payment" | "done";
