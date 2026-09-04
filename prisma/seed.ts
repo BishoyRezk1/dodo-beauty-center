@@ -59,7 +59,10 @@ async function main() {
     { name: "Hair Coloring", slug: "hair-coloring", price: 800, discountPrice: 650, durationMin: 120, description: "صبغة شعر بأحدث الألوان العالمية" },
     { name: "Facial Treatment", slug: "facial-treatment", price: 450, durationMin: 60, description: "تنظيف بشرة عميق وترطيب" },
     { name: "Makeup", slug: "makeup", price: 500, durationMin: 90, description: "مكياج سهرة أو مناسبات" },
-    { name: "Manicure & Pedicure", slug: "manicure-pedicure", price: 250, durationMin: 60, description: "عناية كاملة بالأظافر" }
+    { name: "Manicure & Pedicure", nameEn: "Manicure & Pedicure", slug: "manicure-pedicure", price: 250, durationMin: 60, description: "عناية كاملة بالأظافر", category: "nails", status: "AVAILABLE" },
+    { name: "Manicure", nameEn: "Manicure", slug: "manicure", price: 0, durationMin: 60, description: "عناية وتجميل أظافر اليدين", category: "nails", status: "COMING_SOON" },
+    { name: "Pedicure", nameEn: "Pedicure", slug: "pedicure", price: 0, durationMin: 60, description: "عناية وتجميل أظافر القدمين", category: "nails", status: "COMING_SOON" },
+    { name: "Hard Gel", nameEn: "Hard Gel", slug: "hard-gel", price: 0, durationMin: 90, description: "هارد جيل وتقوية الأظافر", category: "nails", status: "COMING_SOON" }
   ];
   for (const [i, s] of services.entries()) {
     await prisma.service.upsert({
