@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 
-// GET /api/customers — admin: customer list with booking counts, last visit,
-// and total verified payments — built from Booking/Payment rather than the
-// denormalized Customer.totalPaid so it's always accurate.
+// GET /api/customers
+// قاعدة العملاء — البيانات الأساسية + آخر معاملة + آخر خدمة + إجمالي المدفوع
 export async function GET() {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
@@ -12,26 +11,58 @@ export async function GET() {
   const customers = await prisma.customer.findMany({
     include: {
       bookings: {
-        orderBy: { date: "desc" },
-        include: { service: true, payment: true }
+        orderBy: [
+          { date: "desc" },
+          { createdAt: "desc" }
+        ],
+        include: {
+          service: true,
+          payment: true
+        }
       }
     },
-    orderBy: { createdAt: "desc" }
+    orderBy: {
+      createdAt: "desc"
+    }
   });
 
   const rows = customers.map((c) => {
+    const completedBookings = c.bookings.filter(
+      (b) => b.status === "COMPLETED"
+    );
+
+    const latestTransaction =
+      completedBookings[0] ?? c.bookings[0] ?? null;
+
     const totalPaid = c.bookings
       .filter((b) => b.payment?.verified)
-      .reduce((sum, b) => sum + Number(b.payment!.amount), 0);
+      .reduce(
+        (sum, b) => sum + Number(b.payment!.amount),
+        0
+      );
+
     return {
       id: c.id,
       name: c.name,
       phone: c.phone,
       notes: c.notes,
       isBlocked: c.isBlocked,
+
       bookingsCount: c.bookings.length,
+
       lastBooking: c.bookings[0]?.date ?? null,
+
+      lastTransactionAt:
+        c.lastTransactionAt ??
+        latestTransaction?.date ??
+        null,
+
+      lastService:
+        latestTransaction?.service?.name ??
+        null,
+
       totalPaid,
+
       bookings: c.bookings.map((b) => ({
         bookingNumber: b.bookingNumber,
         service: b.service.name,
