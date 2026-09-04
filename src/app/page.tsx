@@ -10,6 +10,7 @@ import LocationSection from "@/components/site/LocationSection";
 import Footer from "@/components/site/Footer";
 import WhatsAppFloatButton from "@/components/site/WhatsAppFloatButton";
 import FacebookFloatButton from "@/components/site/FacebookFloatButton";
+import TikTokFloatButton from "@/components/site/TikTokFloatButton";
 
 // Always fetch fresh data from the database — without this, Next.js would
 // bake the homepage (services, offers, gallery, reviews) into a static
@@ -54,6 +55,9 @@ export default async function HomePage() {
       <WhatsAppFloatButton href={whatsappHref} />
       {settings[SETTING_KEYS.FACEBOOK_URL] && (
         <FacebookFloatButton href={settings[SETTING_KEYS.FACEBOOK_URL]} />
+      )}
+      {settings[SETTING_KEYS.TIKTOK_URL] && (
+        <TikTokFloatButton href={settings[SETTING_KEYS.TIKTOK_URL]} />
       )}
     </>
   );
