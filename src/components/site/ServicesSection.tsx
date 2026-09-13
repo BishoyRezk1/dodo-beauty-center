@@ -19,6 +19,7 @@ export default async function ServicesSection() {
   const categoryNames: Record<string, string> = {
     hair: "الشعر",
     "hair-gel": "Hair Gel",
+    "hard-gel": "هارد جيل",
     skin: "البشرة",
     makeup: "المكياج",
     nails: "الأظافر",

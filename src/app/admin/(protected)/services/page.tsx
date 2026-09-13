@@ -26,6 +26,7 @@ interface Service {
 const categories = [
   ["hair", "الشعر"],
   ["hair-gel", "Hair Gel"],
+  ["hard-gel", "هارد جيل"],
   ["skin", "البشرة"],
   ["makeup", "المكياج"],
   ["nails", "الأظافر"],
