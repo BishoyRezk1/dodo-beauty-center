@@ -54,7 +54,14 @@ export default function BookingFlow() {
       fetch("/api/services").then((r) => r.json()),
       fetch("/api/settings").then((r) => r.json())
     ]).then(([svc, st]) => {
-      setServices(svc);
+      const orderedServices = [...svc].sort((a: Service, b: Service) => {
+        const aHasPrice = Number(a.discountPrice ?? a.price) > 0;
+        const bHasPrice = Number(b.discountPrice ?? b.price) > 0;
+        if (aHasPrice !== bHasPrice) return aHasPrice ? -1 : 1;
+        return 0;
+      });
+
+      setServices(orderedServices);
       setSettings(st);
       if (preselected) {
         const found = svc.find((s: Service) => s.id === preselected);
@@ -248,7 +255,9 @@ export default function BookingFlow() {
                   <p className="text-xs text-charcoal/50">{s.durationMin} دقيقة</p>
                 </div>
                 <span className="font-display font-extrabold text-wine">
-                  {formatEGP(s.discountPrice ?? s.price)}
+                  {Number(s.discountPrice ?? s.price) > 0
+                    ? formatEGP(s.discountPrice ?? s.price)
+                    : "قريباً"}
                 </span>
               </button>
             ))}

@@ -11,6 +11,7 @@ interface ServiceCardProps {
   discountPrice?: number | null;
   durationMin: number;
   imageUrl?: string | null;
+  showComingSoon?: boolean;
   status?: "AVAILABLE" | "COMING_SOON" | "HIDDEN";
 }
 
@@ -23,6 +24,7 @@ export default function ServiceCard({
   discountPrice,
   durationMin,
   imageUrl,
+  showComingSoon = false,
   status = "AVAILABLE",
 }: ServiceCardProps) {
   const hasDiscount =

@@ -29,6 +29,8 @@ export default async function ServicesSection() {
     general: "خدمات أخرى"
   };
 
+  // الخدمات ذات السعر تظهر أولاً داخل كل تصنيف، ثم الخدمات بدون سعر.
+  // نحافظ على sortOrder داخل كل مجموعة.
   const grouped = services.reduce<Record<string, typeof services>>(
     (acc, service) => {
       const key = service.category || "general";
@@ -38,6 +40,22 @@ export default async function ServicesSection() {
     },
     {}
   );
+
+  Object.values(grouped).forEach((categoryServices) => {
+    categoryServices.sort((a, b) => {
+      const aPrice = Number(a.discountPrice ?? a.price);
+      const bPrice = Number(b.discountPrice ?? b.price);
+      const aHasPrice = Number.isFinite(aPrice) && aPrice > 0;
+      const bHasPrice = Number.isFinite(bPrice) && bPrice > 0;
+
+      if (aHasPrice !== bHasPrice) return aHasPrice ? -1 : 1;
+
+      const orderDiff = (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0);
+      if (orderDiff !== 0) return orderDiff;
+
+      return a.name.localeCompare(b.name, "ar");
+    });
+  });
 
   return (
     <section
@@ -88,6 +106,7 @@ export default async function ServicesSection() {
                   durationMin={s.durationMin}
                   imageUrl={s.imageUrl}
                   status={s.status as "AVAILABLE" | "COMING_SOON" | "HIDDEN"}
+                  showComingSoon={Number(s.discountPrice ?? s.price) <= 0}
                 />
               ))}
             </div>
