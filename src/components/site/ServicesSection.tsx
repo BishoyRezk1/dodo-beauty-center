@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import ServiceCard from "./ServiceCard";
 
 export default async function ServicesSection() {
-  const services = await prisma.service.findMany({
+  const services = (await prisma.service.findMany({
     where: {
       isActive: true,
       status: { in: ["AVAILABLE", "COMING_SOON"] }
@@ -12,7 +12,7 @@ export default async function ServicesSection() {
       { sortOrder: "asc" },
       { name: "asc" }
     ]
-  });
+  })).filter((s) => Number(s.discountPrice ?? s.price) > 0);
 
   if (services.length === 0) return null;
 
