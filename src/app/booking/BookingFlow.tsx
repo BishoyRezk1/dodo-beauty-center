@@ -202,6 +202,32 @@ export default function BookingFlow() {
     window.open(whatsappUrl, "_blank");
   }
 
+  function openWhatsAppConfirmation() {
+    if (!selectedService || !bookingNumber) return;
+
+    const whatsappNumber = "201001821352";
+
+    const message = [
+      "مرحبًا DoDo Beauty Center 🌸",
+      "",
+      "تم إنشاء طلب حجز جديد ✅",
+      "",
+      `رقم الحجز: ${bookingNumber}`,
+      `الاسم: ${name.trim()}`,
+      `رقم الهاتف: ${phone.trim()}`,
+      `الخدمة: ${selectedService.name}`,
+      `التاريخ: ${date || "لم يتم تحديده"}`,
+      `الوقت: ${time || "لم يتم تحديده"}`,
+      "",
+      "برجاء مراجعة التحويل وتأكيد الموعد 💚"
+    ].join("\n");
+
+    const whatsappUrl =
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, "_blank");
+  }
+
   async function handleSubmit() {
     if (!selectedService || !screenshotFile) return;
     setSubmitting(true);
@@ -528,7 +554,14 @@ export default function BookingFlow() {
           <p dir="ltr" className="mb-6 font-display text-2xl font-extrabold tracking-widest text-wine">
             {bookingNumber}
           </p>
-          <p className="text-sm text-charcoal/60">سيتم مراجعة التحويل وتأكيد الحجز عبر واتساب.</p>
+          <p className="mb-6 text-sm text-charcoal/60">سيتم مراجعة التحويل وتأكيد الحجز عبر واتساب.</p>
+          <button
+            type="button"
+            onClick={openWhatsAppConfirmation}
+            className="w-full rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700"
+          >
+            💬 إرسال تأكيد الحجز عبر واتساب لدودو
+          </button>
         </div>
       )}
     </div>
