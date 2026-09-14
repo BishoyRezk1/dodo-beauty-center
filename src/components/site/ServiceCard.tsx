@@ -38,18 +38,18 @@ export default function ServiceCard({
         <img
           src={imageUrl}
           alt={name}
-          className="h-52 w-full object-cover"
+          className="h-36 w-full object-cover sm:h-44 md:h-52"
         />
       ) : (
-        <div className="flex h-52 items-center justify-center bg-gray-100 text-5xl">
+        <div className="flex h-36 items-center justify-center bg-gray-100 text-3xl sm:h-44 sm:text-4xl md:h-52 md:text-5xl">
           💇‍♀️
         </div>
       )}
 
-      <div className="p-5">
+      <div className="p-3 sm:p-4 md:p-5">
         <div className="mb-2 flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">{name}</h3>
+            <h3 className="text-base font-bold text-gray-900 sm:text-lg md:text-xl">{name}</h3>
             {nameEn && (
               <p className="text-sm text-gray-500" dir="ltr">
                 {nameEn}
@@ -100,11 +100,11 @@ export default function ServiceCard({
         )}
 
         {status === "AVAILABLE" ? (
-          <div className="rounded-xl bg-pink-600 px-4 py-3 text-center font-bold text-white transition hover:bg-pink-700">
+          <div className="rounded-xl bg-pink-600 px-3 py-2.5 text-center text-sm font-bold text-white transition hover:bg-pink-700 sm:px-4 sm:py-3 sm:text-base">
             احجزي الآن
           </div>
         ) : (
-          <div className="rounded-xl bg-gray-100 px-4 py-3 text-center font-bold text-gray-500">
+          <div className="rounded-xl bg-gray-100 px-3 py-2.5 text-center text-sm font-bold text-gray-500 sm:px-4 sm:py-3 sm:text-base">
             الخدمة ستكون متاحة قريبًا
           </div>
         )}

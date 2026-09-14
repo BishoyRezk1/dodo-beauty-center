@@ -93,7 +93,7 @@ export default async function ServicesSection() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 max-[380px]:grid-cols-1 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 md:gap-6 lg:grid-cols-3 lg:gap-6">
               {categoryServices.map((s) => (
                 <ServiceCard
                   key={s.id}
