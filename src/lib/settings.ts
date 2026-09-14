@@ -28,7 +28,7 @@ export const SETTING_KEYS = {
 } as const;
 
 const DEFAULTS: Record<string, string> = {
-  [SETTING_KEYS.SITE_NAME]: "DoDo Beauty Center",
+  [SETTING_KEYS.SITE_NAME]: "Zina Nails",
   [SETTING_KEYS.SITE_TAGLINE]: "جمالك يستحق لمسة راقية",
   [SETTING_KEYS.PRIMARY_COLOR]: "#7A3B47",
   [SETTING_KEYS.VODAFONE_NUMBER]: "01000000000",

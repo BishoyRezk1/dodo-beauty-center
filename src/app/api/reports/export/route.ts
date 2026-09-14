@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
       // to guarantee it's readable everywhere without bundling extra fonts.
       // The XLSX and CSV exports above are the recommended formats for a
       // fully Arabic report.
-      doc.fontSize(18).text("DoDo Beauty Center - Bookings Report", { align: "center" });
+      doc.fontSize(18).text("Zina Nails - Bookings Report", { align: "center" });
       doc.moveDown();
       doc.fontSize(10);
       rows.forEach((r) => {

@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   }
 
   const defaultSettings: Record<string, string> = {
-    [SETTING_KEYS.SITE_NAME]: "DoDo Beauty Center",
+    [SETTING_KEYS.SITE_NAME]: "Zina Nails",
     [SETTING_KEYS.SITE_TAGLINE]: "جمالك يستحق لمسة راقية",
     [SETTING_KEYS.PRIMARY_COLOR]: "#E91E63",
     [SETTING_KEYS.VODAFONE_NUMBER]: "01000000000",

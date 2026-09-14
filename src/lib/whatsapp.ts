@@ -92,7 +92,7 @@ export function newBookingAdminMessage(params: {
   feeAmount: number;
   screenshotUrl?: string;
 }) {
-  return `🔔 حجز جديد — DoDo Beauty Center
+  return `🔔 حجز جديد — Zina Nails
 
 رقم الحجز: ${params.bookingNumber}
 الاسم: ${params.customerName}
@@ -110,7 +110,7 @@ export function bookingConfirmedCustomerMessage(params: {
   dateLabel: string;
   timeLabel: string;
 }) {
-  return `❤️ DoDo Beauty Center
+  return `❤️ Zina Nails
 تم تأكيد حجزك بنجاح.
 
 رقم الحجز: ${params.bookingNumber}
@@ -122,13 +122,13 @@ export function bookingConfirmedCustomerMessage(params: {
 }
 
 export function bookingRejectedCustomerMessage(params: { bookingNumber: string }) {
-  return `DoDo Beauty Center
+  return `Zina Nails
 
 نأسف، لم نتمكن من تأكيد حجزك رقم ${params.bookingNumber} — يرجى التواصل معنا على واتساب لمراجعة عملية الدفع.`;
 }
 
 export function bookingCancelledCustomerMessage(params: { bookingNumber: string }) {
-  return `DoDo Beauty Center
+  return `Zina Nails
 
 تم إلغاء حجزك رقم ${params.bookingNumber}. لو حابة تحجزي موعد تاني، إحنا في انتظارك 🌷`;
 }
@@ -139,7 +139,7 @@ export function bookingRescheduledCustomerMessage(params: {
   dateLabel: string;
   timeLabel: string;
 }) {
-  return `DoDo Beauty Center
+  return `Zina Nails
 
 تم تعديل موعد حجزك رقم ${params.bookingNumber}.
 
@@ -155,14 +155,14 @@ export function reminderMessage(params: {
   hoursBefore: 24 | 2;
 }) {
   const when = params.hoursBefore === 24 ? "بكرة" : "بعد ساعتين";
-  return `💕 تذكير من DoDo Beauty Center
+  return `💕 تذكير من Zina Nails
 
 معاكِ موعد ${when} الساعة ${params.timeLabel} لخدمة ${params.serviceName}.
 في انتظارك 🌷`;
 }
 
 export function reviewRequestMessage(params: { bookingNumber: string; reviewUrl: string }) {
-  return `DoDo Beauty Center 💕
+  return `Zina Nails 💕
 
 نتمنى تكوني استمتعتي بزيارتك! نسعد لو قيّمتي تجربتك:
 ${params.reviewUrl}

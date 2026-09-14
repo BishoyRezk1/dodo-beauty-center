@@ -12,8 +12,8 @@ const cairo = Cairo({
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   return {
-    title: settings.site_name || "DoDo Beauty Center",
-    description: settings.site_tagline || "احجزي موعدك أونلاين في DoDo Beauty Center",
+    title: settings.site_name || "Zina Nails",
+    description: settings.site_tagline || "احجزي موعدك أونلاين في Zina Nails",
     icons: { icon: "/favicon.ico" }
   };
 }

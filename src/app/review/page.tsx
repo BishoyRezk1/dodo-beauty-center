@@ -102,7 +102,7 @@ export default function ReviewPage() {
       </div>
       <div className="section-container max-w-lg py-8">
         <h1 className="mb-2 text-center font-display text-2xl font-bold text-charcoal">قيّمي تجربتك</h1>
-        <p className="mb-6 text-center text-charcoal/60">نسعد جدًا برأيك في زيارتك لـ DoDo Beauty Center</p>
+        <p className="mb-6 text-center text-charcoal/60">نسعد جدًا برأيك في زيارتك لـ Zina Nails</p>
         <Suspense fallback={<div className="text-center text-charcoal/50">جاري التحميل...</div>}>
           <ReviewForm />
         </Suspense>

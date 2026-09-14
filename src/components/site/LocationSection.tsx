@@ -14,7 +14,7 @@ export default function LocationSection({ address, mapUrl, lat, lng }: Props) {
         <div className="mb-10 text-center">
           <span className="text-xs font-bold tracking-widest text-rosegold">موقعنا</span>
           <h2 className="mt-2 font-display text-3xl font-extrabold text-charcoal md:text-4xl">
-            📍 موقع DoDo Beauty Center
+            📍 موقع Zina Nails
           </h2>
           <p className="mt-2 text-charcoal/60">{address}</p>
         </div>
@@ -27,7 +27,7 @@ export default function LocationSection({ address, mapUrl, lat, lng }: Props) {
             style={{ border: 0 }}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="موقع DoDo Beauty Center على الخريطة"
+            title="موقع Zina Nails على الخريطة"
           />
         </div>
 
