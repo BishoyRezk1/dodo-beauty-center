@@ -13,6 +13,7 @@ interface Service {
   durationMin: number;
   description: string | null;
   status?: "AVAILABLE" | "COMING_SOON" | "HIDDEN";
+  category?: string;
 }
 
 type Step = "service" | "datetime" | "details" | "payment" | "done";
@@ -93,6 +94,28 @@ export default function BookingFlow() {
       .then((data) => setSlots(data.slots || []))
       .finally(() => setSlotsLoading(false));
   }, [date, selectedService]);
+
+  const categoryNames: Record<string, string> = {
+    hair: "الشعر",
+    "hair-gel": "Hair Gel",
+    "hard-gel": "هارد جيل",
+    skin: "البشرة",
+    makeup: "المكياج",
+    nails: "الأظافر",
+    "hair-removal": "إزالة الشعر",
+    "body-care": "العناية",
+    bridal: "العروس",
+    general: "خدمات أخرى"
+  };
+
+  const groupedServices = useMemo(() => {
+    return services.reduce<Record<string, Service[]>>((acc, s) => {
+      const key = s.category || "general";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(s);
+      return acc;
+    }, {});
+  }, [services]);
 
   const fee = useMemo(() => {
     if (!selectedService) return 0;
@@ -240,28 +263,33 @@ export default function BookingFlow() {
       {step === "service" && (
         <div>
           <h2 className="mb-6 font-display text-2xl font-bold text-charcoal">اختاري الخدمة</h2>
-          <div className="flex flex-col gap-3">
-            {services.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => {
-                  setSelectedService(s);
-                  setStep("datetime");
-                }}
-                className={`card flex items-center justify-between p-4 text-right transition hover:border-wine ${
-                  selectedService?.id === s.id ? "border-wine" : ""
-                }`}
-              >
-                <div>
-                  <p className="font-bold text-charcoal">{s.name}</p>
-                  <p className="text-xs text-charcoal/50">{s.durationMin} دقيقة</p>
+          <div className="flex flex-col gap-8">
+            {Object.entries(groupedServices).map(([category, categoryServices]) => (
+              <div key={category}>
+                <h3 className="mb-3 text-sm font-bold text-charcoal/60">
+                  {categoryNames[category] || "خدمات أخرى"}
+                </h3>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                  {categoryServices.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setSelectedService(s);
+                        setStep("datetime");
+                      }}
+                      className={`card flex flex-col items-start gap-2 p-4 text-right transition hover:border-wine hover:-translate-y-0.5 ${
+                        selectedService?.id === s.id ? "border-wine bg-wine/5" : ""
+                      }`}
+                    >
+                      <p className="font-bold text-charcoal">{s.name}</p>
+                      <p className="text-xs text-charcoal/50">⏱️ {s.durationMin} دقيقة</p>
+                      <span className="font-display font-extrabold text-wine">
+                        {formatEGP(s.discountPrice ?? s.price)}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-                <span className="font-display font-extrabold text-wine">
-                  {Number(s.discountPrice ?? s.price) > 0
-                    ? formatEGP(s.discountPrice ?? s.price)
-                    : "قريباً"}
-                </span>
-              </button>
+              </div>
             ))}
             {services.length === 0 && <p className="text-charcoal/50">لا توجد خدمات متاحة حاليًا</p>}
           </div>
