@@ -22,7 +22,7 @@ export default async function HomePage() {
   const settings = await getSettings();
   const whatsappHref = buildWhatsAppLink(
     settings[SETTING_KEYS.WHATSAPP_SHOP_LINK_NUMBER],
-    "مرحبًا، أريد الاستفسار عن الخدمات في DoDo Beauty Center"
+    "مرحبًا، أريد الاستفسار عن الخدمات في Zina Nails"
   );
 
   return (
