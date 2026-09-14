@@ -54,12 +54,14 @@ export default function BookingFlow() {
       fetch("/api/services").then((r) => r.json()),
       fetch("/api/settings").then((r) => r.json())
     ]).then(([svc, st]) => {
-      const orderedServices = [...svc].sort((a: Service, b: Service) => {
-        const aHasPrice = Number(a.discountPrice ?? a.price) > 0;
-        const bHasPrice = Number(b.discountPrice ?? b.price) > 0;
-        if (aHasPrice !== bHasPrice) return aHasPrice ? -1 : 1;
-        return 0;
-      });
+      const orderedServices = [...svc]
+        .filter((s: Service) => Number(s.discountPrice ?? s.price) > 0)
+        .sort((a: Service, b: Service) => {
+          const aHasPrice = Number(a.discountPrice ?? a.price) > 0;
+          const bHasPrice = Number(b.discountPrice ?? b.price) > 0;
+          if (aHasPrice !== bHasPrice) return aHasPrice ? -1 : 1;
+          return 0;
+        });
 
       setServices(orderedServices);
       setSettings(st);
