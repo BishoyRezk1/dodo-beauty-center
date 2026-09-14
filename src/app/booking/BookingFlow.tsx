@@ -182,7 +182,7 @@ export default function BookingFlow() {
     const whatsappNumber = "201001821352";
 
     const message = [
-      "مرحبًا DoDo Beauty Center 🌸",
+      "مرحبًا Zina Nails 🌸",
       "",
       "أريد حجز موعد عن طريق الواتساب.",
       "",
@@ -208,7 +208,7 @@ export default function BookingFlow() {
     const whatsappNumber = "201001821352";
 
     const message = [
-      "مرحبًا DoDo Beauty Center 🌸",
+      "مرحبًا Zina Nails 🌸",
       "",
       "تم إنشاء طلب حجز جديد ✅",
       "",
