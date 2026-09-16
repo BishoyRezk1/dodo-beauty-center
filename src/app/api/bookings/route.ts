@@ -6,6 +6,7 @@ import { getSetting, SETTING_KEYS, calculateFee } from "@/lib/settings";
 import { sendWhatsAppMessage, newBookingAdminMessage } from "@/lib/whatsapp";
 import { formatArabicDate } from "@/lib/utils";
 import { z } from "zod";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 function toMinutes(value: string): number {
   const [hours, minutes] = value.split(":").map(Number);
@@ -79,6 +80,15 @@ const bookingSchema = z.object({
 
 // POST /api/bookings — public: submit a new booking request
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const { allowed } = rateLimit(`bookings:${ip}`, 5, 10 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "محاولات كتيرة جدًا، برجاء الانتظار شوية والمحاولة تاني." },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await req.json();
 

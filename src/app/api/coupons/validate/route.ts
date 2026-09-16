@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const schema = z.object({ code: z.string().min(1), serviceId: z.string().min(1) });
 
@@ -8,6 +9,15 @@ const schema = z.object({ code: z.string().min(1), serviceId: z.string().min(1) 
 // Does NOT increment usedCount here; that happens when the booking is actually created,
 // so an abandoned checkout doesn't burn a use.
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const { allowed } = rateLimit(`coupon:${ip}`, 10, 10 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "محاولات كتيرة جدًا، برجاء الانتظار شوية والمحاولة تاني." },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json();
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "بيانات غير صحيحة" }, { status: 400 });

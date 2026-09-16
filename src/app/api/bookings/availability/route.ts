@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSetting, SETTING_KEYS } from "@/lib/settings";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
@@ -19,6 +20,15 @@ function isValidTime(value: string): boolean {
 
 // GET /api/bookings/availability?serviceId=xxx&date=2026-09-15
 export async function GET(req: NextRequest) {
+  const ip = getClientIp(req);
+  const { allowed } = rateLimit(`availability:${ip}`, 30, 5 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "طلبات كتيرة جدًا، برجاء الانتظار شوية والمحاولة تاني." },
+      { status: 429 }
+    );
+  }
+
   try {
     const serviceId = req.nextUrl.searchParams.get("serviceId");
     const dateStr = req.nextUrl.searchParams.get("date");
