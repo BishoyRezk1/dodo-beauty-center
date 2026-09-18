@@ -32,6 +32,11 @@ export default async function ReviewsSection() {
           </div>
         ))}
       </div>
+      <div className="mt-8 text-center">
+        <a href="/review" className="btn-secondary inline-block">
+          اكتبي رأيك
+        </a>
+      </div>
     </section>
   );
 }

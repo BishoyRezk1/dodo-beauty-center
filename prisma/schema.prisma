@@ -172,8 +172,9 @@ model GalleryItem {
 
 model Review {
   id           String   @id @default(cuid())
-  bookingId    String   @unique
-  booking      Booking  @relation(fields: [bookingId], references: [id])
+  bookingId    String?  @unique
+  booking      Booking? @relation(fields: [bookingId], references: [id])
+  facebookId   String?  @unique
   customerName String
   rating       Int // 1-5
   comment      String?
