@@ -60,14 +60,37 @@ async function main() {
     { name: "Facial Treatment", slug: "facial-treatment", price: 450, durationMin: 60, description: "تنظيف بشرة عميق وترطيب" },
     { name: "Makeup", slug: "makeup", price: 500, durationMin: 90, description: "مكياج سهرة أو مناسبات" },
     { name: "Manicure & Pedicure", nameEn: "Manicure & Pedicure", slug: "manicure-pedicure", price: 250, durationMin: 60, description: "عناية كاملة بالأظافر", category: "nails", status: "AVAILABLE" },
-    { name: "Manicure", nameEn: "Manicure", slug: "manicure", price: 0, durationMin: 60, description: "عناية وتجميل أظافر اليدين", category: "nails", status: "COMING_SOON" },
-    { name: "Pedicure", nameEn: "Pedicure", slug: "pedicure", price: 0, durationMin: 60, description: "عناية وتجميل أظافر القدمين", category: "nails", status: "COMING_SOON" },
-    { name: "Hard Gel", nameEn: "Hard Gel", slug: "hard-gel", price: 0, durationMin: 90, description: "هارد جيل وتقوية الأظافر", category: "nails", status: "COMING_SOON" }
+
+    // ---- Hard Gel ----
+    { name: "جيل بولش", nameEn: "Gel Polish", slug: "gel-polish", price: 150, durationMin: 60, description: "جيل بولش شامل لون سادة وإضافتين تصميم", category: "hard-gel", status: "AVAILABLE" },
+    { name: "تريتمنت", nameEn: "Treatment", slug: "treatment", price: 200, durationMin: 60, description: "تريتمنت للأظافر", category: "hard-gel", status: "AVAILABLE" },
+    { name: "هارد جيل", nameEn: "Hard Gel", slug: "hard-gel", price: 250, durationMin: 90, description: "هارد جيل شامل لون سادة وإضافتين تصميم", category: "hard-gel", status: "AVAILABLE" },
+    { name: "هاف جيل", nameEn: "Half Gel", slug: "half-gel", price: 220, durationMin: 90, description: "هاف جيل شامل لون سادة وإضافتين تصميم", category: "hard-gel", status: "AVAILABLE" },
+    { name: "ريبيل هارد", nameEn: "Rebel Hard", slug: "rebel-hard", price: 220, durationMin: 90, description: "ريبيل هارد شامل لون سادة وإضافتين تصميم", category: "hard-gel", status: "AVAILABLE" },
+    { name: "فيك نيلز", nameEn: "Fake Nails", slug: "fake-nails", price: 150, durationMin: 60, description: "فيك نيلز والتصميم حسب الاختيار", category: "hard-gel", status: "AVAILABLE" },
+    { name: "فرينش", nameEn: "French", slug: "french", price: 30, durationMin: 20, description: "إضافة فرينش", category: "hard-gel", status: "AVAILABLE" },
+    { name: "أوبرلي", nameEn: "Ombre", slug: "ombre", price: 30, durationMin: 20, description: "إضافة أومبري", category: "hard-gel", status: "AVAILABLE" },
+    { name: "كات آي", nameEn: "Cat Eye", slug: "cat-eye", price: 30, durationMin: 20, description: "إضافة كات آي", category: "hard-gel", status: "AVAILABLE" },
+    { name: "ميرور", nameEn: "Mirror", slug: "mirror", price: 30, durationMin: 20, description: "إضافة ميرور", category: "hard-gel", status: "AVAILABLE" },
+    { name: "تصليح ضافر", nameEn: "Nail Repair", slug: "nail-repair", price: 30, durationMin: 20, description: "تصليح ضافر", category: "hard-gel", status: "AVAILABLE" },
+    { name: "إكستنشن", nameEn: "Extension", slug: "extension", price: 10, durationMin: 15, description: "إضافة إكستنشن", category: "hard-gel", status: "AVAILABLE" },
+    { name: "إزالة شغل مش شغلي", nameEn: "Remove Other Work", slug: "remove-other-work", price: 50, durationMin: 30, description: "إزالة شغل مش شغلي", category: "hard-gel", status: "AVAILABLE" }
   ];
+
   for (const [i, s] of services.entries()) {
     await prisma.service.upsert({
       where: { slug: s.slug },
-      update: {},
+      update: {
+        name: s.name,
+        nameEn: s.nameEn ?? null,
+        price: s.price,
+        durationMin: s.durationMin,
+        description: s.description,
+        category: s.category ?? "general",
+        status: s.status ?? "AVAILABLE",
+        isActive: true,
+        sortOrder: i
+      },
       create: { ...s, sortOrder: i, isActive: true }
     });
   }
