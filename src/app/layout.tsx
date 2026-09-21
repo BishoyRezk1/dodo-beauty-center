@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import { getSettings } from "@/lib/settings";
+import LiquidCursorEffect from "@/components/site/LiquidCursorEffect";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -21,7 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" className={cairo.variable}>
-      <body className="font-body antialiased">{children}</body>
+      <body className="font-body antialiased">
+        {children}
+        <LiquidCursorEffect />
+      </body>
     </html>
   );
 }
