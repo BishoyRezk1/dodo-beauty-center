@@ -34,7 +34,7 @@ export default async function ReviewsSection() {
       </div>
       <div className="mt-8 text-center">
         <a href="/review" className="btn-secondary inline-block">
-          اكتبي رأيك
+          رأيك يهمنا
         </a>
       </div>
     </section>
