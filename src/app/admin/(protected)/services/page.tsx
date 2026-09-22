@@ -65,6 +65,7 @@ export default function ServicesAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [catalogLoading, setCatalogLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<ServiceStatus | null>(null);
 
   async function load() {
     const res = await fetch("/api/services?all=1");
@@ -271,27 +272,66 @@ export default function ServicesAdminPage() {
       </div>
 
       <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="card p-4 text-center">
+        <button
+          type="button"
+          onClick={() =>
+            setStatusFilter((f) => (f === "AVAILABLE" ? null : "AVAILABLE"))
+          }
+          className={`card p-4 text-center transition ${
+            statusFilter === "AVAILABLE" ? "ring-2 ring-green-600" : ""
+          }`}
+        >
           <p className="text-xs text-charcoal/50">متاحة</p>
           <p className="mt-1 text-2xl font-extrabold text-green-600">
             {availableCount}
           </p>
-        </div>
+        </button>
 
-        <div className="card p-4 text-center">
+        <button
+          type="button"
+          onClick={() =>
+            setStatusFilter((f) => (f === "COMING_SOON" ? null : "COMING_SOON"))
+          }
+          className={`card p-4 text-center transition ${
+            statusFilter === "COMING_SOON" ? "ring-2 ring-amber-600" : ""
+          }`}
+        >
           <p className="text-xs text-charcoal/50">قريبًا</p>
           <p className="mt-1 text-2xl font-extrabold text-amber-600">
             {comingSoonCount}
           </p>
-        </div>
+        </button>
 
-        <div className="card p-4 text-center">
+        <button
+          type="button"
+          onClick={() =>
+            setStatusFilter((f) => (f === "HIDDEN" ? null : "HIDDEN"))
+          }
+          className={`card p-4 text-center transition ${
+            statusFilter === "HIDDEN" ? "ring-2 ring-red-600" : ""
+          }`}
+        >
           <p className="text-xs text-charcoal/50">مخفية</p>
           <p className="mt-1 text-2xl font-extrabold text-red-600">
             {hiddenCount}
           </p>
-        </div>
+        </button>
       </div>
+
+      {statusFilter && (
+        <div className="mb-4 flex items-center justify-between rounded-xl bg-blush/40 px-4 py-2 text-sm">
+          <span className="font-bold text-charcoal">
+            بتعرضي بس: {statusOptions.find(([v]) => v === statusFilter)?.[1]}
+          </span>
+          <button
+            type="button"
+            onClick={() => setStatusFilter(null)}
+            className="font-bold text-wine underline"
+          >
+            عرض الكل
+          </button>
+        </div>
+      )}
 
       {showForm && (
         <form
@@ -500,7 +540,7 @@ export default function ServicesAdminPage() {
       )}
 
       <div className="flex flex-col gap-3">
-        {services.map((s) => (
+        {(statusFilter ? services.filter((s) => s.status === statusFilter) : services).map((s) => (
           <div
             key={s.id}
             className="card flex flex-wrap items-center gap-4 p-4"
@@ -588,9 +628,11 @@ export default function ServicesAdminPage() {
           </div>
         ))}
 
-        {services.length === 0 && (
+        {(statusFilter ? services.filter((s) => s.status === statusFilter) : services).length === 0 && (
           <div className="card p-8 text-center text-charcoal/50">
-            لا توجد خدمات. استخدمي "إضافة قائمة الخدمات الأساسية".
+            {statusFilter
+              ? "لا توجد خدمات بهذه الحالة."
+              : 'لا توجد خدمات. استخدمي "إضافة قائمة الخدمات الأساسية".'}
           </div>
         )}
       </div>
