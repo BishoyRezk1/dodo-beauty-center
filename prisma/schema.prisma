@@ -182,6 +182,14 @@ model Review {
   createdAt    DateTime @default(now())
 }
 
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
+
 model Coupon {
   id              String    @id @default(cuid())
   code            String    @unique

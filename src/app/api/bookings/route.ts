@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { generateBookingNumber } from "@/lib/booking-number";
 import { getSetting, SETTING_KEYS, calculateFee } from "@/lib/settings";
 import { sendWhatsAppMessage, newBookingAdminMessage } from "@/lib/whatsapp";
+import { sendPushToAdmins } from "@/lib/push";
 import { formatArabicDate } from "@/lib/utils";
 import { z } from "zod";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
@@ -892,6 +893,12 @@ export async function POST(req: NextRequest) {
       shopNumber,
       message
     ).catch(() => {});
+
+    sendPushToAdmins({
+      title: "🔔 حجز جديد",
+      body: `${name} حجزت ${booking.service.name} — ${booking.bookingNumber}`,
+      url: "/admin/bookings"
+    }).catch(() => {});
 
     /*
      * ---------------------------------------------------------

@@ -5,7 +5,7 @@ import { getSettings } from "@/lib/settings";
 import LiquidCursorEffect from "@/components/site/LiquidCursorEffect";
 
 const almarai = Almarai({
-  subsets: ["arabic", "latin"],
+  subsets: ["arabic"],
   weight: ["300", "400", "700", "800"],
   variable: "--font-body"
 });

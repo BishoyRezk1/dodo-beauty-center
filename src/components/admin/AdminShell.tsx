@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
+import PushNotificationSetup from "./PushNotificationSetup";
 
 const navItems = [
   { href: "/admin/dashboard", label: "الرئيسية", icon: "📊" },
@@ -33,6 +34,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="flex min-h-screen bg-cream">
+      <PushNotificationSetup />
       {/* Mobile top bar */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-rosegold/20 bg-white px-4 md:hidden">
         <span className="font-display font-extrabold text-wine">DoDo Admin</span>
