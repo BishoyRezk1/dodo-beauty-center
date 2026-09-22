@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
-import { Cairo } from "next/font/google";
+import { Almarai, El_Messiri } from "next/font/google";
 import "./globals.css";
 import { getSettings } from "@/lib/settings";
 import LiquidCursorEffect from "@/components/site/LiquidCursorEffect";
 
-const cairo = Cairo({
+const almarai = Almarai({
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["300", "400", "700", "800"],
+  variable: "--font-body"
+});
+
+const elMessiri = El_Messiri({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-display"
 });
 
@@ -21,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={cairo.variable}>
+    <html lang="ar" dir="rtl" className={`${almarai.variable} ${elMessiri.variable}`}>
       <body className="font-body antialiased">
         {children}
         <LiquidCursorEffect />
