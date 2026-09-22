@@ -308,7 +308,6 @@ export default function BookingFlow() {
                       }`}
                     >
                       <p className="font-bold text-charcoal">{s.name}</p>
-                      <p className="text-xs text-charcoal/50">⏱️ {s.durationMin} دقيقة</p>
                       <span className="font-display font-extrabold text-wine">
                         {formatEGP(s.discountPrice ?? s.price)}
                       </span>

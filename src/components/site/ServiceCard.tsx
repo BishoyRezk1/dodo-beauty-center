@@ -70,11 +70,7 @@ export default function ServiceCard({
           </p>
         )}
 
-        <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm text-gray-500">
-            ⏱️ {durationMin} دقيقة
-          </span>
-
+        <div className="mb-4 flex items-center justify-end">
           {status === "COMING_SOON" ? (
             <span className="font-bold text-amber-600">سيتم تحديد السعر</span>
           ) : hasDiscount ? (

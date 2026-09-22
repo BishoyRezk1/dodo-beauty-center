@@ -18,8 +18,7 @@ export default function LiquidCursorEffect() {
     if (isAdmin) return;
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
-    if (prefersReducedMotion || !hasFinePointer) return;
+    if (prefersReducedMotion) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -46,6 +45,15 @@ export default function LiquidCursorEffect() {
       target.y = e.clientY;
     }
     window.addEventListener("mousemove", onMove);
+
+    function onTouchMove(e: TouchEvent) {
+      const touch = e.touches[0];
+      if (!touch) return;
+      target.x = touch.clientX;
+      target.y = touch.clientY;
+    }
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchstart", onTouchMove, { passive: true });
 
     const colors = ["#E85588", "#E91E63", "#FFD9E8"];
 
@@ -110,6 +118,8 @@ export default function LiquidCursorEffect() {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchstart", onTouchMove);
       document.removeEventListener("mousemove", onCardMove);
       document.removeEventListener("mouseleave", onCardLeave);
     };
