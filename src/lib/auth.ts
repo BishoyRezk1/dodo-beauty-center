@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt", maxAge: 60 * 60 * 8 }, // 8h admin sessions
@@ -13,8 +14,19 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
+
+        // Brute-force protection: max 5 login attempts per 15 minutes per IP.
+        const forwardedFor = req?.headers?.["x-forwarded-for"];
+        const ip = (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor)
+          ?.split(",")[0]
+          ?.trim() || "unknown";
+
+        const { allowed } = rateLimit(`admin-login:${ip}`, 5, 15 * 60 * 1000);
+        if (!allowed) {
+          throw new Error("محاولات دخول كتيرة جدًا، برجاء الانتظار شوية والمحاولة تاني.");
+        }
 
         const admin = await prisma.adminUser.findUnique({
           where: { email: credentials.email.toLowerCase().trim() }
