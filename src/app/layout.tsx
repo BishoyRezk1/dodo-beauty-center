@@ -29,8 +29,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ar" dir="rtl" className={`${almarai.variable} ${elMessiri.variable}`}>
       <body className="font-body antialiased">
-        {children}
-        <LiquidCursorEffect />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            backgroundImage: "url('/logo-watermark.png')",
+            backgroundRepeat: "repeat",
+            backgroundSize: "220px auto",
+            opacity: 0.08
+          }}
+        />
+        <div className="relative z-10">
+          {children}
+          <LiquidCursorEffect />
+        </div>
       </body>
     </html>
   );
