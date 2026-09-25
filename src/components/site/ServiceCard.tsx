@@ -70,23 +70,6 @@ export default function ServiceCard({
           </p>
         )}
 
-        <div className="mb-4 flex items-center justify-end">
-          {status === "COMING_SOON" ? (
-            <span className="font-bold text-amber-600">سيتم تحديد السعر</span>
-          ) : hasDiscount ? (
-            <div className="text-right">
-              <span className="mr-2 text-sm text-gray-400 line-through">
-                {price} ج.م
-              </span>
-              <span className="font-bold text-pink-600">
-                {discountPrice} ج.م
-              </span>
-            </div>
-          ) : (
-            <span className="font-bold text-pink-600">{price} ج.م</span>
-          )}
-        </div>
-
         {hasDiscount && status === "AVAILABLE" && (
           <div className="mb-4">
             <span className="inline-block rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-600">

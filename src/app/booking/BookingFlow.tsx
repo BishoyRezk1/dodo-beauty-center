@@ -322,9 +322,6 @@ export default function BookingFlow() {
                       }`}
                     >
                       <p className="font-bold text-charcoal">{s.name}</p>
-                      <span className="font-display font-extrabold text-wine">
-                        {formatEGP(s.discountPrice ?? s.price)}
-                      </span>
                     </button>
                   ))}
                 </div>
