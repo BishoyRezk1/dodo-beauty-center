@@ -15,6 +15,7 @@ interface Stats {
   totalFees: number;
   recentBookings: any[];
   popularServices: { service: string; count: number }[];
+  siteVisits: { total: number; today: number };
 }
 
 const statusLabels: Record<string, string> = {
@@ -42,7 +43,9 @@ export default function DashboardPage() {
     { label: "الحجوزات المؤكدة", value: stats.confirmed },
     { label: "الحجوزات الملغاة", value: stats.cancelled },
     { label: "عدد العملاء", value: stats.customersCount },
-    { label: "إجمالي رسوم الحجز", value: formatEGP(stats.totalFees) }
+    { label: "إجمالي رسوم الحجز", value: formatEGP(stats.totalFees) },
+    { label: "زيارات الموقع", value: stats.siteVisits.total },
+    { label: "زيارات اليوم", value: stats.siteVisits.today }
   ];
 
   return (

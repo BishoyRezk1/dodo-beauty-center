@@ -3,6 +3,7 @@ import { Almarai, El_Messiri } from "next/font/google";
 import "./globals.css";
 import { getSettings } from "@/lib/settings";
 import LiquidCursorEffect from "@/components/site/LiquidCursorEffect";
+import VisitTracker from "@/components/site/VisitTracker";
 
 const almarai = Almarai({
   subsets: ["arabic"],
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="relative z-10">
           {children}
           <LiquidCursorEffect />
+          <VisitTracker />
         </div>
       </body>
     </html>

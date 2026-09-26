@@ -21,7 +21,9 @@ export async function GET() {
     customersCount,
     feeAgg,
     recentBookings,
-    popularServices
+    popularServices,
+    totalVisits,
+    todayVisits
   ] = await Promise.all([
     prisma.booking.count(),
     prisma.booking.count({ where: { date: { gte: todayStart, lte: todayEnd } } }),
@@ -41,7 +43,9 @@ export async function GET() {
       _count: { serviceId: true },
       orderBy: { _count: { serviceId: "desc" } },
       take: 5
-    })
+    }),
+    prisma.pageView.count(),
+    prisma.pageView.count({ where: { createdAt: { gte: todayStart, lte: todayEnd } } })
   ]);
 
   const serviceIds = popularServices.map((p) => p.serviceId);
@@ -61,6 +65,7 @@ export async function GET() {
     customersCount,
     totalFees: feeAgg._sum.amount || 0,
     recentBookings,
-    popularServices: popular
+    popularServices: popular,
+    siteVisits: { total: totalVisits, today: todayVisits }
   });
 }

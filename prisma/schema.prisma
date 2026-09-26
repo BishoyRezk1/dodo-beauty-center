@@ -190,6 +190,14 @@ model PushSubscription {
   createdAt DateTime @default(now())
 }
 
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model Coupon {
   id              String    @id @default(cuid())
   code            String    @unique
