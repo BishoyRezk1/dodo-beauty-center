@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export default function VisitTracker() {
-  const pathname = usePathname();
+  const sent = useRef(false);
 
   useEffect(() => {
-    if (pathname?.startsWith("/admin")) return;
+    if (sent.current) return;
+    sent.current = true;
 
     fetch("/api/analytics/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: pathname || "/" })
+      body: JSON.stringify({ path: window.location.pathname })
     }).catch(() => {});
-  }, [pathname]);
+  }, []);
 
   return null;
 }
