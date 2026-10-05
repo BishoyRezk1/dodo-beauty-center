@@ -3,6 +3,7 @@ import { buildWhatsAppLink } from "@/lib/whatsapp";
 import Header from "@/components/site/Header";
 import Hero from "@/components/site/Hero";
 import ServicesSection from "@/components/site/ServicesSection";
+import OpeningOffer from "@/components/site/OpeningOffer";
 import GallerySection from "@/components/site/GallerySection";
 import ReviewsSection from "@/components/site/ReviewsSection";
 import LocationSection from "@/components/site/LocationSection";
@@ -33,6 +34,7 @@ export default async function HomePage() {
           tagline={settings[SETTING_KEYS.SITE_TAGLINE]}
           whatsappHref={whatsappHref}
         />
+        <OpeningOffer />
         <ServicesSection />
         <GallerySection />
         <ReviewsSection />
