@@ -3,10 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-const OFFER_DURATION = 7 * 24 * 60 * 60 * 1000;
+const OFFER_END = new Date("2026-10-13T23:59:59+03:00").getTime();
 
-// يبدأ العد من أول مرة يتم فيها تحميل العرض بعد النشر
-const STORAGE_KEY = "zina_nails_opening_offer_start";
 
 const offers = [
   { name: "فتلة", price: 25 },
@@ -28,17 +26,8 @@ export default function OpeningOffer() {
   const [remaining, setRemaining] = useState("");
 
   useEffect(() => {
-    let startedAt = localStorage.getItem(STORAGE_KEY);
-
-    if (!startedAt) {
-      startedAt = String(Date.now());
-      localStorage.setItem(STORAGE_KEY, startedAt);
-    }
-
-    const start = Number(startedAt);
-
     const update = () => {
-      const left = start + OFFER_DURATION - Date.now();
+      const left = OFFER_END - Date.now();
 
       if (left <= 0) {
         setVisible(false);
@@ -94,7 +83,7 @@ export default function OpeningOffer() {
             </h2>
 
             <p className="mt-3 text-sm font-semibold text-wine md:text-base">
-              أسعار خاصة لمدة أسبوع فقط
+              أسعار خاصة حتى يوم الثلاثاء 13 أكتوبر
             </p>
 
             <div className="mx-auto mt-4 inline-flex rounded-full bg-white px-5 py-2 text-xs font-bold text-charcoal shadow-sm ring-1 ring-rosegold/20">

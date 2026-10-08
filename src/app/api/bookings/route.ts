@@ -1,3 +1,4 @@
+import { normalizePhone } from "@/lib/customer-session";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
@@ -111,7 +112,7 @@ export async function POST(req: NextRequest) {
 
     const {
       name,
-      phone,
+      phone: rawPhone,
       serviceId,
       date,
       time,
@@ -120,6 +121,8 @@ export async function POST(req: NextRequest) {
       couponCode,
       offerId
     } = parsed.data;
+
+    const phone = normalizePhone(rawPhone);
 
     if (!isValidTime(time)) {
       return NextResponse.json(
