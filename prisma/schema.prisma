@@ -39,6 +39,7 @@ model Customer {
   name              String
   phone             String    @unique
   bookings          Booking[]
+  conversation      Conversation?
   totalPaid         Decimal   @default(0) @db.Decimal(10, 2)
   lastTransactionAt DateTime?
   notes             String?
@@ -228,4 +229,48 @@ model SpecialWorkingHours {
   updatedAt  DateTime @updatedAt
 
   @@index([date])
+}
+
+model Conversation {
+  id                 String    @id @default(cuid())
+  customerId         String    @unique
+  customer           Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  messages           Message[]
+  lastMessageAt      DateTime?
+  lastMessagePreview String?
+  customerUnread     Int       @default(0)
+  adminUnread        Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([lastMessageAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         String // CUSTOMER | ADMIN
+  kind           String       @default("TEXT") // TEXT | IMAGE | SERVICE_CARD | OFFER_CARD | BOOKING_CARD
+  body           String?
+  imageUrl       String?
+  serviceId      String?
+  bookingId      String?
+  replyToId      String?
+  replyTo        Message?     @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies        Message[]    @relation("MessageReply")
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+model QuickReply {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
 }
