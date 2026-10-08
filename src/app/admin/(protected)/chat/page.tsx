@@ -104,8 +104,12 @@ export default function AdminChatPage() {
   }, [loadList]);
 
   useEffect(() => {
-    fetch("/api/admin/chat/quick-replies").then((r) => r.ok && r.json().then(setQuick));
-    fetch("/api/admin/chat/catalog").then((r) => r.ok && r.json().then(setCatalog));
+    fetch("/api/admin/chat/quick-replies").then(async (r) => {
+      if (r.ok) setQuick(await r.json());
+    });
+    fetch("/api/admin/chat/catalog").then(async (r) => {
+      if (r.ok) setCatalog(await r.json());
+    });
   }, []);
 
   const fetchMsgs = useCallback(async (id: string) => {
