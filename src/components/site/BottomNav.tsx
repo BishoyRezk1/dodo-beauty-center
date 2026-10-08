@@ -13,6 +13,7 @@ type Item = {
 };
 
 const ICONS: Record<string, string[]> = {
+  user: ["M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2", "M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"],
   home: ["M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"],
   services: ["M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z", "M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"],
   book: ["M12 5v14", "M5 12h14"],
@@ -49,7 +50,7 @@ export default function BottomNav({ whatsappHref }: { whatsappHref: string }) {
     { key: "services", label: "الخدمات", href: "/#services", paths: [] },
     { key: "book", label: "احجزي الآن", href: "/booking", paths: ["/booking"], primary: true },
     { key: "offers", label: "العروض", href: "/offers", paths: ["/offers"] },
-    { key: "chat", label: "واتساب", href: whatsappHref, paths: [], external: true }
+    { key: "user", label: "حسابي", href: "/account", paths: ["/account"] }
   ];
 
   const isActive = (it: Item) =>
