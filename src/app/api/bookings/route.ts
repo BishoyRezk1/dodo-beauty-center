@@ -1,4 +1,4 @@
-import { normalizePhone } from "@/lib/customer-session";
+import { normalizePhone } from "@/lib/phone";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
