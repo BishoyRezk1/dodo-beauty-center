@@ -304,6 +304,17 @@ export default function ChatPage() {
       className="fixed inset-x-0 z-[60] flex flex-col bg-cream"
       style={{ height: vh ?? "100dvh", top: vTop }}
     >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          zIndex: -1,
+          backgroundImage: "url('/logo-watermark.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "200px auto",
+          opacity: 0.1
+        }}
+      />
       {/* Header */}
       <header
         className="flex items-center gap-3 border-b border-rosegold/25 bg-white/90 px-3 py-2.5 backdrop-blur"
