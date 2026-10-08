@@ -9,3 +9,6 @@ public/uploads/
 next-env.d.ts
 .vercel
 .env*
+tsconfig.tsbuildinfo
+*.save
+*.backup*
