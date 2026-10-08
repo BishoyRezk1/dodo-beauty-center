@@ -1,3 +1,4 @@
+import { publishChat } from "@/lib/pusher";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -21,8 +22,7 @@ export async function GET(req: NextRequest) {
   const c = await getCustomer();
   if (!c) return NextResponse.json({ error: "سجّلي دخول الأول" }, { status: 401 });
 
-  const conv = await prisma.conversation.findUnique({ where: { customerId: c.id } });
-  if (!conv) return NextResponse.json({ messages: [], customerUnread: 0 });
+  const conv = await getOrCreateConversation(c.id);
 
   const sp = req.nextUrl.searchParams;
   const limit = Math.min(Number(sp.get("limit")) || 50, 100);
@@ -54,7 +54,8 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     messages: rows.map(serializeMessage),
-    customerUnread: conv.customerUnread
+    customerUnread: conv.customerUnread,
+    conversationId: conv.id
   });
 }
 
@@ -132,5 +133,7 @@ export async function POST(req: NextRequest) {
     });
   } catch {}
 
-  return NextResponse.json({ message: serializeMessage(msg) }, { status: 201 });
+  const out = serializeMessage(msg);
+  await publishChat(conv.id, "message", out);
+  return NextResponse.json({ message: out }, { status: 201 });
 }

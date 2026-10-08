@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 export default function AnnouncementBanner() {
   const pathname = usePathname();
   const [open, setOpen] = useState(true);
-  if (!open || pathname?.startsWith("/admin")) return null;
+  if (!open || pathname?.startsWith("/admin") || pathname?.startsWith("/chat")) return null;
 
   return (
     <div

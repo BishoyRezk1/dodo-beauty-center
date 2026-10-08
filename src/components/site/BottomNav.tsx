@@ -43,13 +43,13 @@ function Icon({ name, size = 24 }: { name: string; size?: number }) {
 
 export default function BottomNav({ whatsappHref }: { whatsappHref: string }) {
   const pathname = usePathname() || "/";
-  if (pathname.startsWith("/admin") || pathname.startsWith("/booking")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/booking") || pathname.startsWith("/chat")) return null;
 
   const items: Item[] = [
     { key: "home", label: "الرئيسية", href: "/", paths: ["/"] },
     { key: "services", label: "الخدمات", href: "/#services", paths: [] },
     { key: "book", label: "احجزي الآن", href: "/booking", paths: ["/booking"], primary: true },
-    { key: "offers", label: "العروض", href: "/offers", paths: ["/offers"] },
+    { key: "chat", label: "Zina Chat", href: "/chat", paths: ["/chat"] },
     { key: "user", label: "حسابي", href: "/account", paths: ["/account"] }
   ];
 

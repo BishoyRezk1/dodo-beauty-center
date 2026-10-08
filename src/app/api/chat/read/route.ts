@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCustomer } from "@/lib/customer-session";
+import { publishChat } from "@/lib/pusher";
 
 // POST /api/chat/read — customer opened the chat: mark admin messages read.
 export async function POST() {
@@ -15,10 +16,11 @@ export async function POST() {
     where: { conversationId: conv.id, sender: "ADMIN", deliveredAt: null },
     data: { deliveredAt: now }
   });
-  await prisma.message.updateMany({
+  const r = await prisma.message.updateMany({
     where: { conversationId: conv.id, sender: "ADMIN", readAt: null },
     data: { readAt: now }
   });
   await prisma.conversation.update({ where: { id: conv.id }, data: { customerUnread: 0 } });
+  if (r.count > 0) await publishChat(conv.id, "read", { by: "CUSTOMER", at: now.toISOString() });
   return NextResponse.json({ ok: true });
 }
