@@ -25,6 +25,7 @@ export const config = {
     "/admin/gallery/:path*",
     "/admin/reviews/:path*",
     "/admin/reports/:path*",
-    "/admin/settings/:path*"
+    "/admin/settings/:path*",
+    "/admin/chat/:path*"
   ]
 };

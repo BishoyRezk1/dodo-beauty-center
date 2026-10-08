@@ -23,6 +23,9 @@ export async function GET(req: NextRequest) {
   if (!c) return NextResponse.json({ error: "سجّلي دخول الأول" }, { status: 401 });
 
   const conv = await getOrCreateConversation(c.id);
+  if (!conv.customerLastSeenAt || Date.now() - conv.customerLastSeenAt.getTime() > 60000) {
+    await prisma.conversation.update({ where: { id: conv.id }, data: { customerLastSeenAt: new Date() } });
+  }
 
   const sp = req.nextUrl.searchParams;
   const limit = Math.min(Number(sp.get("limit")) || 50, 100);
