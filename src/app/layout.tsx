@@ -1,3 +1,4 @@
+import AnnouncementBanner from "@/components/AnnouncementBanner";
 import type { Metadata } from "next";
 import { Almarai, El_Messiri } from "next/font/google";
 import "./globals.css";
@@ -41,7 +42,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <div className="relative z-10">
-          {children}
+          <AnnouncementBanner />
+{children}
           <LiquidCursorEffect />
           <VisitTracker />
         </div>
