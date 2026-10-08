@@ -43,6 +43,10 @@ model Customer {
   lastTransactionAt DateTime?
   notes             String?
   isBlocked         Boolean   @default(false)
+  passwordHash      String?
+  email             String?
+  avatarUrl         String?
+  birthDate         DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 }
