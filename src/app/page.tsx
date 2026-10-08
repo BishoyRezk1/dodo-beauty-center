@@ -52,6 +52,7 @@ export default async function HomePage() {
         facebookUrl={settings[SETTING_KEYS.FACEBOOK_URL] || undefined}
         tiktokUrl={settings[SETTING_KEYS.TIKTOK_URL] || undefined}
       />
+      <div className="hidden md:block">
       <WhatsAppFloatButton href={whatsappHref} />
       {settings[SETTING_KEYS.FACEBOOK_URL] && (
         <FacebookFloatButton href={settings[SETTING_KEYS.FACEBOOK_URL]} />
@@ -59,6 +60,7 @@ export default async function HomePage() {
       {settings[SETTING_KEYS.TIKTOK_URL] && (
         <TikTokFloatButton href={settings[SETTING_KEYS.TIKTOK_URL]} />
       )}
+      </div>
     </>
   );
 }

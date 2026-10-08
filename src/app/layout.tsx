@@ -1,10 +1,12 @@
 import AnnouncementBanner from "@/components/AnnouncementBanner";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Almarai, El_Messiri } from "next/font/google";
 import "./globals.css";
-import { getSettings } from "@/lib/settings";
+import { getSettings, SETTING_KEYS } from "@/lib/settings";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 import LiquidCursorEffect from "@/components/site/LiquidCursorEffect";
 import VisitTracker from "@/components/site/VisitTracker";
+import BottomNav from "@/components/site/BottomNav";
 
 const almarai = Almarai({
   subsets: ["arabic"],
@@ -18,6 +20,13 @@ const elMessiri = El_Messiri({
   variable: "--font-display"
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#E91E63"
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   return {
@@ -27,7 +36,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSettings();
+  const whatsappHref = buildWhatsAppLink(
+    settings[SETTING_KEYS.WHATSAPP_SHOP_LINK_NUMBER],
+    "مرحبًا، أريد الاستفسار عن الخدمات في Zina Nails"
+  );
+
   return (
     <html lang="ar" dir="rtl" className={`${almarai.variable} ${elMessiri.variable}`}>
       <body className="font-body antialiased">
@@ -43,9 +58,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <div className="relative z-10">
           <AnnouncementBanner />
-{children}
+          {children}
           <LiquidCursorEffect />
           <VisitTracker />
+          <BottomNav whatsappHref={whatsappHref} />
         </div>
       </body>
     </html>
