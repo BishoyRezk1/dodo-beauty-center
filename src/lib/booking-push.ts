@@ -13,15 +13,15 @@ export function fmtDateAr(d: Date) {
 
 type Note = { title: string; body: string; url: string };
 
-async function send(bookingId: string, build: (when: string, service: string) => Note | null) {
+async function send(bookingId: string, build: (when: string, service: string, bn: string) => Note | null) {
   try {
     const b = await prisma.booking.findUnique({
       where: { id: bookingId },
-      select: { customerId: true, date: true, startTime: true, service: { select: { name: true } } }
+      select: { customerId: true, bookingNumber: true, date: true, startTime: true, service: { select: { name: true } } }
     });
     if (!b) return;
     const when = `${fmtDateAr(b.date)} الساعة ${fmtTime12(b.startTime)}`;
-    const n = build(when, b.service.name);
+    const n = build(when, b.service.name, b.bookingNumber);
     if (!n) return;
     await sendPushToCustomer(b.customerId, { ...n, tag: `booking-${bookingId}` });
   } catch {}
@@ -38,12 +38,12 @@ export function notifyBookingReceived(bookingId: string) {
 
 /** Admin changed the booking status. */
 export function notifyBookingStatus(bookingId: string, status: string) {
-  return send(bookingId, (when, s) => {
+  return send(bookingId, (when, s, bn) => {
     const map: Record<string, Note> = {
       CONFIRMED: { title: "💅🏻 تم تأكيد حجزك في Zina Nails", body: `${s} · ${when}`, url: "/account" },
       REJECTED: { title: "تعذّر تأكيد حجزك", body: `${s} · ${when}. كلمينا في الشات.`, url: "/chat" },
       CANCELLED: { title: "تم إلغاء حجزك", body: `${s} · ${when}`, url: "/chat" },
-      COMPLETED: { title: "كيف كانت تجربتك اليوم؟ ⭐", body: "قيّمي تجربتك في Zina Nails", url: "/review" }
+      COMPLETED: { title: "كيف كانت تجربتك اليوم؟ ⭐", body: "قيّمي تجربتك في Zina Nails", url: `/review?booking=${encodeURIComponent(bn)}` }
     };
     return map[status] || null;
   });
