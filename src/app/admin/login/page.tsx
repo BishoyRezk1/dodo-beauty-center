@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-charcoal px-5">
       <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-xl2 bg-cream p-8 shadow-soft">
-        <h1 className="mb-1 font-display text-2xl font-extrabold text-wine">DoDo Admin</h1>
+        <h1 className="mb-1 font-display text-2xl font-extrabold text-wine">Zina Admin</h1>
         <p className="mb-6 text-sm text-charcoal/60">تسجيل دخول لوحة التحكم</p>
 
         <div className="flex flex-col gap-4">

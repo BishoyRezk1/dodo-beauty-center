@@ -39,7 +39,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       <PushNotificationSetup />
       {/* Mobile top bar */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-rosegold/20 bg-white px-4 md:hidden">
-        <span className="font-display font-extrabold text-wine">DoDo Admin</span>
+        <span className="font-display font-extrabold text-wine">Zina Admin</span>
         <button onClick={() => setOpen((v) => !v)} className="h-9 w-9 rounded-full border border-wine/30 text-wine">
           {open ? "✕" : "☰"}
         </button>
@@ -50,7 +50,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           open ? "translate-x-0" : "translate-x-full md:translate-x-0"
         }`}
       >
-        <div className="mb-8 hidden font-display text-xl font-extrabold text-wine md:block">DoDo Admin</div>
+        <div className="mb-8 hidden font-display text-xl font-extrabold text-wine md:block">Zina Admin</div>
         <nav className="mt-14 flex flex-col gap-1 md:mt-0">
           {navItems.map((item) => {
             const active = pathname?.startsWith(item.href);
