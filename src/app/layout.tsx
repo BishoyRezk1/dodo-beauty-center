@@ -4,10 +4,15 @@ import { Almarai, El_Messiri } from "next/font/google";
 import "./globals.css";
 import { getSettings, SETTING_KEYS } from "@/lib/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { getMaintenance } from "@/lib/maintenance";
 import LiquidCursorEffect from "@/components/site/LiquidCursorEffect";
 import VisitTracker from "@/components/site/VisitTracker";
 import BottomNav from "@/components/site/BottomNav";
 import PwaRegister from "@/components/site/PwaRegister";
+import SiteGate from "@/components/site/SiteGate";
+
+// Maintenance mode must take effect immediately, so never statically cache the shell.
+export const dynamic = "force-dynamic";
 
 const almarai = Almarai({
   subsets: ["arabic"],
@@ -39,7 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const settings = await getSettings();
+  const [settings, maintenance] = await Promise.all([getSettings(), getMaintenance()]);
   const whatsappHref = buildWhatsAppLink(
     settings[SETTING_KEYS.WHATSAPP_SHOP_LINK_NUMBER],
     "مرحبًا، أريد الاستفسار عن الخدمات في Zina Nails"
@@ -59,12 +64,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
         <div className="relative z-10">
-          <AnnouncementBanner />
-          {children}
-          <LiquidCursorEffect />
-          <VisitTracker />
+          <SiteGate maintenance={maintenance.on} message={maintenance.message}>
+            <AnnouncementBanner />
+            {children}
+            <LiquidCursorEffect />
+            <VisitTracker />
+            <BottomNav whatsappHref={whatsappHref} />
+          </SiteGate>
           <PwaRegister />
-          <BottomNav whatsappHref={whatsappHref} />
         </div>
       </body>
     </html>

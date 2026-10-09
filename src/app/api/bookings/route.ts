@@ -1,3 +1,4 @@
+import { isMaintenanceOn } from "@/lib/maintenance";
 import { notifyBookingReceived } from "@/lib/booking-push";
 import { normalizePhone } from "@/lib/phone";
 import { NextRequest, NextResponse } from "next/server";
@@ -83,6 +84,13 @@ const bookingSchema = z.object({
 
 // POST /api/bookings — public: submit a new booking request
 export async function POST(req: NextRequest) {
+  if (await isMaintenanceOn()) {
+    return NextResponse.json(
+      { error: "الحجز متوقف مؤقتًا بسبب التحديثات، هنرجعلك قريب 💗" },
+      { status: 503 }
+    );
+  }
+
   const ip = getClientIp(req);
   const { allowed } = rateLimit(`bookings:${ip}`, 5, 10 * 60 * 1000);
   if (!allowed) {
