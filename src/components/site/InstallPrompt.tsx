@@ -12,8 +12,12 @@ export default function InstallPrompt() {
       window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
     setInstalled(standalone);
     setIos(/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone);
+    const early = (window as any).__zinaBip;
+    const href = ((document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null)?.href || "");
+    if (early && !href.includes("admin-app")) setEvt(early);
     const onPrompt = (e: Event) => {
       e.preventDefault();
+      (window as any).__zinaBip = e;
       setEvt(e);
     };
     const onInstalled = () => setInstalled(true);
