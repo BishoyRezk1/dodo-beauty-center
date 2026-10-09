@@ -7,6 +7,7 @@ import { buildWhatsAppLink } from "@/lib/whatsapp";
 import LiquidCursorEffect from "@/components/site/LiquidCursorEffect";
 import VisitTracker from "@/components/site/VisitTracker";
 import BottomNav from "@/components/site/BottomNav";
+import PwaRegister from "@/components/site/PwaRegister";
 
 const almarai = Almarai({
   subsets: ["arabic"],
@@ -32,7 +33,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings.site_name || "Zina Nails",
     description: settings.site_tagline || "احجزي موعدك أونلاين في Zina Nails",
-    icons: { icon: "/favicon.ico" }
+    icons: { icon: "/favicon.ico", apple: "/pwa-icon?size=180" },
+    appleWebApp: { capable: true, title: "Zina Nails", statusBarStyle: "default" }
   };
 }
 
@@ -61,6 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {children}
           <LiquidCursorEffect />
           <VisitTracker />
+          <PwaRegister />
           <BottomNav whatsappHref={whatsappHref} />
         </div>
       </body>
