@@ -1,7 +1,8 @@
-import type { MetadataRoute } from "next";
+export const dynamic = "force-static";
 
-export default function manifest(): MetadataRoute.Manifest {
-  return {
+export function GET() {
+  const manifest = {
+    id: "/",
     name: "Zina Nails",
     short_name: "Zina Nails",
     description: "احجزي موعدك في Zina Nails 💅🏻",
@@ -10,6 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     orientation: "portrait",
     lang: "ar",
+    dir: "rtl",
     background_color: "#FFF5F7",
     theme_color: "#E91E63",
     icons: [
@@ -23,4 +25,7 @@ export default function manifest(): MetadataRoute.Manifest {
       { name: "حجوزاتي", url: "/account" }
     ]
   };
+  return new Response(JSON.stringify(manifest), {
+    headers: { "Content-Type": "application/manifest+json", "Cache-Control": "public, max-age=3600" }
+  });
 }
