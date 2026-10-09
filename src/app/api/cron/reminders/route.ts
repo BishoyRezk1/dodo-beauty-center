@@ -1,37 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppMessage, reminderMessage } from "@/lib/whatsapp";
+import { sendPushToCustomer } from "@/lib/push";
+import { fmtTime12 } from "@/lib/booking-push";
+
+export const dynamic = "force-dynamic";
 
 /**
- * Sends WhatsApp reminders for confirmed bookings starting in ~24h or ~2h.
- *
- * Vercel's own cron (see vercel.json) calls this automatically once a day,
- * which is enough for the 24h reminder but too coarse for the 2h one.
- * Vercel authenticates its own cron calls with an
- * `Authorization: Bearer $CRON_SECRET` header automatically — just set
- * CRON_SECRET as an environment variable and nothing else is needed.
- *
- * For the 2h reminder to actually fire on time, add a free external
- * scheduler (e.g. cron-job.org) that calls this URL every 15–30 minutes
- * with the same header:
- *
- *   GET https://yourdomain.com/api/cron/reminders
- *   Header: Authorization: Bearer YOUR_CRON_SECRET
- *
- * Both reminders are idempotent (each booking is only reminded once per
- * window) so calling this endpoint extra times is always safe.
+ * Reminders for CONFIRMED bookings ~24h and ~2h before start (push + WhatsApp).
+ * Call it every 15-30 min from an external scheduler (e.g. cron-job.org) with:
+ *   Authorization: Bearer <CRON_SECRET>
+ * Each reminder is sent once per booking, so extra calls are safe.
  */
+
+// Offset (ms) of Africa/Cairo from UTC at a given instant (handles DST).
+function cairoOffsetMs(at: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Africa/Cairo",
+    hourCycle: "h23",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric"
+  }).formatToParts(at);
+  const g = (t: string) => Number(parts.find((x) => x.type === t)!.value);
+  return Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute"), g("second")) - at.getTime();
+}
+
+// booking.date is stored as midnight UTC of the booking day; startTime is Cairo local.
+function startInstant(date: Date, hhmm: string) {
+  const [h, m] = hhmm.split(":").map(Number);
+  const guess = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), h, m);
+  return new Date(guess - cairoOffsetMs(new Date(guess)));
+}
+
 export async function GET(req: NextRequest) {
+  const secret = process.env.CRON_SECRET;
   const auth = req.headers.get("authorization");
-  if (!auth || auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!secret || !auth || auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
   }
 
   const now = new Date();
+  const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 24 * 3600 * 1000);
+
   const confirmed = await prisma.booking.findMany({
     where: {
       status: "CONFIRMED",
-      date: { gte: new Date(now.toDateString()) },
+      date: { gte: dayStart },
       OR: [{ reminder24Sent: false }, { reminder2Sent: false }]
     },
     include: { customer: true, service: true }
@@ -40,38 +58,40 @@ export async function GET(req: NextRequest) {
   let sent24 = 0;
   let sent2 = 0;
 
-  for (const booking of confirmed) {
-    const [h, m] = booking.startTime.split(":").map(Number);
-    const start = new Date(booking.date);
-    start.setHours(h, m, 0, 0);
-    const hoursUntil = (start.getTime() - now.getTime()) / (1000 * 60 * 60);
+  for (const b of confirmed) {
+    const hoursUntil = (startInstant(b.date, b.startTime).getTime() - now.getTime()) / 3600000;
 
-    // 24h window: 23–25 hours out, not sent yet
-    if (!booking.reminder24Sent && hoursUntil <= 25 && hoursUntil >= 23) {
-      const message = reminderMessage({
-        serviceName: booking.service.name,
-        timeLabel: booking.startTime,
-        hoursBefore: 24
+    const window24 = !b.reminder24Sent && hoursUntil <= 25 && hoursUntil >= 23;
+    const window2 = !b.reminder2Sent && hoursUntil <= 2.5 && hoursUntil >= 1.5;
+    if (!window24 && !window2) continue;
+
+    const hoursBefore = window24 ? 24 : 2;
+    const hasPush = (await prisma.pushSubscription.count({ where: { customerId: b.customerId } })) > 0;
+
+    if (hasPush) {
+      await sendPushToCustomer(b.customerId, {
+        title: "⏰ تذكير بموعدك في Zina Nails",
+        body: `${b.service.name} · ${hoursBefore === 24 ? "بكرة" : "بعد ساعتين"} الساعة ${fmtTime12(b.startTime)}`,
+        url: "/account",
+        tag: `reminder-${b.id}-${hoursBefore}`
       });
-      const ok = await sendWhatsAppMessage(booking.customer.phone, message);
-      if (ok) {
-        await prisma.booking.update({ where: { id: booking.id }, data: { reminder24Sent: true } });
-        sent24++;
-      }
     }
 
-    // 2h window: 1.5–2.5 hours out, not sent yet
-    if (!booking.reminder2Sent && hoursUntil <= 2.5 && hoursUntil >= 1.5) {
-      const message = reminderMessage({
-        serviceName: booking.service.name,
-        timeLabel: booking.startTime,
-        hoursBefore: 2
+    let waOk = false;
+    try {
+      waOk = await sendWhatsAppMessage(
+        b.customer.phone,
+        reminderMessage({ serviceName: b.service.name, timeLabel: b.startTime, hoursBefore })
+      );
+    } catch {}
+
+    if (hasPush || waOk) {
+      await prisma.booking.update({
+        where: { id: b.id },
+        data: window24 ? { reminder24Sent: true } : { reminder2Sent: true }
       });
-      const ok = await sendWhatsAppMessage(booking.customer.phone, message);
-      if (ok) {
-        await prisma.booking.update({ where: { id: booking.id }, data: { reminder2Sent: true } });
-        sent2++;
-      }
+      if (window24) sent24++;
+      else sent2++;
     }
   }
 
