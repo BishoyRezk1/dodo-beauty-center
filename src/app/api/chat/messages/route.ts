@@ -2,7 +2,7 @@ import { publishChat } from "@/lib/pusher";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitDb } from "@/lib/rate-limit";
 import { getCustomer } from "@/lib/customer-session";
 import { sendPushToAdmins } from "@/lib/push";
 import {
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   const c = await getCustomer();
   if (!c) return NextResponse.json({ error: "سجّلي دخول الأول" }, { status: 401 });
 
-  const { allowed } = rateLimit(`chat-send:${c.id}`, 30, 60 * 1000);
+  const { allowed } = await rateLimitDb(`chat-send:${c.id}`, 30, 60 * 1000);
   if (!allowed) return NextResponse.json({ error: "بتبعتي بسرعة، استني شوية." }, { status: 429 });
 
   const parsed = sendSchema.safeParse(await req.json().catch(() => null));

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitDb, getClientIp } from "@/lib/rate-limit";
 
 const VISITOR_COOKIE = "dodo_visitor";
 const COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours
@@ -10,7 +10,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
 
-  const { allowed } = rateLimit(`track:${ip}`, 60, 5 * 60 * 1000);
+  const { allowed } = await rateLimitDb(`track:${ip}`, 60, 5 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json({ ok: false }, { status: 429 });
   }

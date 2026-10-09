@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitDb, getClientIp } from "@/lib/rate-limit";
 import { sendPushToAdmins } from "@/lib/push";
 import { isAllowedImageUrl } from "@/lib/chat";
 import { z } from "zod";
@@ -37,7 +37,7 @@ const schema = z.object({
 // POST /api/reviews — public: customer submits a review using their booking number.
 // Only allowed once per booking, and only for COMPLETED bookings.
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`review:${getClientIp(req)}`, 8, 10 * 60 * 1000);
+  const { allowed } = await rateLimitDb(`review:${getClientIp(req)}`, 8, 10 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json({ error: "محاولات كتيرة، حاولي بعد شوية." }, { status: 429 });
   }

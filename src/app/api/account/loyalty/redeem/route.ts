@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitDb } from "@/lib/rate-limit";
 import { getCustomer } from "@/lib/customer-session";
 import { getLoyaltyConfig } from "@/lib/loyalty";
 
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const c = await getCustomer();
   if (!c) return NextResponse.json({ error: "سجّلي دخول الأول" }, { status: 401 });
 
-  const { allowed } = rateLimit(`loyalty-redeem:${c.id}`, 5, 10 * 60 * 1000);
+  const { allowed } = await rateLimitDb(`loyalty-redeem:${c.id}`, 5, 10 * 60 * 1000);
   if (!allowed) return NextResponse.json({ error: "محاولات كتيرة، استني شوية." }, { status: 429 });
 
   const parsed = schema.safeParse(await req.json().catch(() => null));

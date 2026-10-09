@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadImage } from "@/lib/storage";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitDb } from "@/lib/rate-limit";
 import { getCustomer } from "@/lib/customer-session";
 
 // POST /api/chat/upload — logged-in customers only; verifies real image bytes.
@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const c = await getCustomer();
   if (!c) return NextResponse.json({ error: "سجّلي دخول الأول" }, { status: 401 });
 
-  const { allowed } = rateLimit(`chat-upload:${c.id}`, 20, 10 * 60 * 1000);
+  const { allowed } = await rateLimitDb(`chat-upload:${c.id}`, 20, 10 * 60 * 1000);
   if (!allowed) return NextResponse.json({ error: "رفع صور كتير، استني شوية." }, { status: 429 });
 
   try {

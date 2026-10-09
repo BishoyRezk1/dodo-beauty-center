@@ -95,5 +95,11 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Housekeeping: keep growing tables small.
+  try {
+    await prisma.$executeRaw`DELETE FROM "RateLimit" WHERE "resetAt" < NOW() - INTERVAL '1 day'`;
+    await prisma.$executeRaw`DELETE FROM "PageView" WHERE "createdAt" < NOW() - INTERVAL '180 days'`;
+  } catch {}
+
   return NextResponse.json({ ok: true, checked: confirmed.length, sent24, sent2 });
 }

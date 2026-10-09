@@ -2,7 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitDb } from "@/lib/rate-limit";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt", maxAge: 60 * 60 * 8 }, // 8h admin sessions
@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
           ?.split(",")[0]
           ?.trim() || "unknown";
 
-        const { allowed } = rateLimit(`admin-login:${ip}`, 5, 15 * 60 * 1000);
+        const { allowed } = await rateLimitDb(`admin-login:${ip}`, 5, 15 * 60 * 1000);
         if (!allowed) {
           throw new Error("محاولات دخول كتيرة جدًا، برجاء الانتظار شوية والمحاولة تاني.");
         }

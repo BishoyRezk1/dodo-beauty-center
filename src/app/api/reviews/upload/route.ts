@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { uploadImage } from "@/lib/storage";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitDb, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`review-upload:${getClientIp(req)}`, 8, 10 * 60 * 1000);
+  const { allowed } = await rateLimitDb(`review-upload:${getClientIp(req)}`, 8, 10 * 60 * 1000);
   if (!allowed) return NextResponse.json({ error: "رفع صور كتير، استني شوية." }, { status: 429 });
 
   try {

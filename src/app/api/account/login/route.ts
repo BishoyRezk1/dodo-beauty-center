@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitDb, getClientIp } from "@/lib/rate-limit";
 import { normalizePhone } from "@/lib/phone";
 import { setCustomerSession } from "@/lib/customer-session";
 
@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "بيانات غير صحيحة" }, { status: 400 });
 
   const phone = normalizePhone(parsed.data.phone);
-  const a = rateLimit(`acct-login-ip:${getClientIp(req)}`, 15, 15 * 60 * 1000);
-  const b = rateLimit(`acct-login-phone:${phone}`, 5, 15 * 60 * 1000);
+  const a = await rateLimitDb(`acct-login-ip:${getClientIp(req)}`, 15, 15 * 60 * 1000);
+  const b = await rateLimitDb(`acct-login-phone:${phone}`, 5, 15 * 60 * 1000);
   if (!a.allowed || !b.allowed) {
     return NextResponse.json({ error: "محاولات كتيرة، حاولي بعد شوية." }, { status: 429 });
   }

@@ -1,3 +1,4 @@
+import { isAllowedImageUrl } from "@/lib/chat";
 import { isMaintenanceOn } from "@/lib/maintenance";
 import { notifyBookingReceived } from "@/lib/booking-push";
 import { normalizePhone } from "@/lib/phone";
@@ -10,7 +11,7 @@ import { sendWhatsAppMessage, newBookingAdminMessage } from "@/lib/whatsapp";
 import { sendPushToAdmins } from "@/lib/push";
 import { formatArabicDate } from "@/lib/utils";
 import { z } from "zod";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitDb, getClientIp } from "@/lib/rate-limit";
 
 function toMinutes(value: string): number {
   const [hours, minutes] = value.split(":").map(Number);
@@ -77,7 +78,11 @@ const bookingSchema = z.object({
     "الوقت غير صالح"
   ),
   notes: z.string().optional(),
-  screenshotUrl: z.string().min(1, "صورة إثبات التحويل مطلوبة"),
+  screenshotUrl: z
+    .string()
+    .min(1, "صورة إثبات التحويل مطلوبة")
+    .max(1000)
+    .refine((u) => isAllowedImageUrl(u) && u.includes("payment-screenshots/"), "رابط الصورة غير صالح"),
   couponCode: z.string().optional(),
   offerId: z.string().optional()
 });
@@ -92,7 +97,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = getClientIp(req);
-  const { allowed } = rateLimit(`bookings:${ip}`, 5, 10 * 60 * 1000);
+  const { allowed } = await rateLimitDb(`bookings:${ip}`, 5, 10 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json(
       { error: "محاولات كتيرة جدًا، برجاء الانتظار شوية والمحاولة تاني." },

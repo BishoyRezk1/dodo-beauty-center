@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitDb, getClientIp } from "@/lib/rate-limit";
 import { normalizePhone, isValidEgPhone } from "@/lib/phone";
 import { setCustomerSession } from "@/lib/customer-session";
 
@@ -14,7 +14,7 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`acct-reg:${getClientIp(req)}`, 5, 15 * 60 * 1000);
+  const { allowed } = await rateLimitDb(`acct-reg:${getClientIp(req)}`, 5, 15 * 60 * 1000);
   if (!allowed) return NextResponse.json({ error: "محاولات كتيرة، حاولي بعد شوية." }, { status: 429 });
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
