@@ -9,6 +9,7 @@ import LiquidCursorEffect from "@/components/site/LiquidCursorEffect";
 import VisitTracker from "@/components/site/VisitTracker";
 import BottomNav from "@/components/site/BottomNav";
 import PwaRegister from "@/components/site/PwaRegister";
+import AdminInstall from "@/components/site/AdminInstall";
 import SiteGate from "@/components/site/SiteGate";
 
 // Maintenance mode must take effect immediately, so never statically cache the shell.
@@ -72,6 +73,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <BottomNav whatsappHref={whatsappHref} />
           </SiteGate>
           <PwaRegister />
+          <AdminInstall />
         </div>
       </body>
     </html>
