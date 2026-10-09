@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Pusher from "pusher-js";
+import PushToggle from "@/components/site/PushToggle";
 
 type Msg = {
   id: string;
@@ -341,6 +342,8 @@ export default function ChatPage() {
           🔍
         </button>
       </header>
+
+      {state === "ok" && <PushToggle compact />}
 
       {searchOpen && (
         <div className="border-b border-rosegold/20 bg-white px-3 py-2">

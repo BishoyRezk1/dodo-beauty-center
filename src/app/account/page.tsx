@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import PushToggle from "@/components/site/PushToggle";
 
 type Booking = {
   id: string;
@@ -184,6 +185,10 @@ export default function AccountPage() {
       <Link href="/booking" className="btn-primary mt-4 w-full">
         احجزي موعد جديد
       </Link>
+
+      <div className="mt-4">
+        <PushToggle />
+      </div>
 
       <h2 className="mb-3 mt-8 font-display text-lg font-bold text-charcoal">مواعيدك القادمة</h2>
       <div className="space-y-3">

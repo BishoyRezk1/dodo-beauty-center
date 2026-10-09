@@ -20,7 +20,7 @@ export async function sendPushToAdmins(payload: {
 }) {
   if (!publicKey || !privateKey) return;
 
-  const subs = await prisma.pushSubscription.findMany();
+  const subs = await prisma.pushSubscription.findMany({ where: { customerId: null } });
 
   await Promise.all(
     subs.map(async (sub) => {
@@ -37,6 +37,35 @@ export async function sendPushToAdmins(payload: {
           await prisma.pushSubscription
             .delete({ where: { id: sub.id } })
             .catch(() => {});
+        }
+      }
+    })
+  );
+}
+
+/**
+ * Sends a push notification to every device a given customer enabled
+ * notifications on. Never throws; expired subscriptions are cleaned up.
+ */
+export async function sendPushToCustomer(
+  customerId: string,
+  payload: { title: string; body: string; url?: string; tag?: string }
+) {
+  if (!publicKey || !privateKey) return;
+
+  const subs = await prisma.pushSubscription.findMany({ where: { customerId } });
+
+  await Promise.all(
+    subs.map(async (sub) => {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          JSON.stringify(payload),
+          { TTL: 60 * 60 * 24 }
+        );
+      } catch (err: any) {
+        if (err?.statusCode === 404 || err?.statusCode === 410) {
+          await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
         }
       }
     })

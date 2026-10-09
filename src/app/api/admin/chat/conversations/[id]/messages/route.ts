@@ -1,3 +1,4 @@
+import { sendPushToCustomer } from "@/lib/push";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
-  const conv = await prisma.conversation.findUnique({ where: { id: params.id }, select: { id: true } });
+  const conv = await prisma.conversation.findUnique({ where: { id: params.id }, select: { id: true, customerId: true } });
   if (!conv) return NextResponse.json({ error: "المحادثة غير موجودة" }, { status: 404 });
 
   const parsed = sendSchema.safeParse(await req.json().catch(() => null));
@@ -123,5 +124,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const out = serializeMessage(msg);
   await publishChat(conv.id, "message", out);
+  await sendPushToCustomer(conv.customerId, { title: "💬 Zina Nails", body: preview.slice(0, 80) || "رسالة جديدة", url: "/chat", tag: "chat" });
   return NextResponse.json({ message: out }, { status: 201 });
 }
