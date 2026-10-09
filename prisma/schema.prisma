@@ -187,6 +187,8 @@ model Review {
   comment      String?
   isApproved   Boolean  @default(false)
   createdAt    DateTime @default(now())
+  imageUrl     String?
+  isFeatured   Boolean  @default(false)
 }
 
 model PushSubscription {
