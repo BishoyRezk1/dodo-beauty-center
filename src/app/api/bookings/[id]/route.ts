@@ -1,3 +1,4 @@
+import { notifyBookingStatus, notifyPaymentVerified } from "@/lib/booking-push";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
@@ -251,6 +252,12 @@ export async function PATCH(
     }
 
     const booking = updatedBooking;
+
+    if (status && status !== original.status) {
+      await notifyBookingStatus(params.id, status as string);
+    } else if (!status && verifyPayment && !original.payment?.verified) {
+      await notifyPaymentVerified(params.id);
+    }
 
     if (status === "CONFIRMED") {
       await prisma.notification.create({
