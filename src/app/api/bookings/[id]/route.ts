@@ -1,3 +1,4 @@
+import { awardBookingPoints } from "@/lib/loyalty";
 import { notifyBookingStatus, notifyPaymentVerified } from "@/lib/booking-push";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -255,6 +256,7 @@ export async function PATCH(
 
     if (status && status !== original.status) {
       await notifyBookingStatus(params.id, status as string);
+      if (status === "COMPLETED") await awardBookingPoints(params.id);
     } else if (!status && verifyPayment && !original.payment?.verified) {
       await notifyPaymentVerified(params.id);
     }

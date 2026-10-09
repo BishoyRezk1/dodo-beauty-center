@@ -41,6 +41,7 @@ model Customer {
   bookings          Booking[]
   conversation      Conversation?
   pushSubscriptions PushSubscription[]
+  loyaltyTransactions LoyaltyTransaction[]
   totalPaid         Decimal   @default(0) @db.Decimal(10, 2)
   lastTransactionAt DateTime?
   notes             String?
@@ -279,4 +280,17 @@ model QuickReply {
   body      String
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+}
+
+model LoyaltyTransaction {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  points     Int
+  type       String // BOOKING | REVIEW | REDEEM | MANUAL
+  reason     String?
+  refKey     String?  @unique
+  createdAt  DateTime @default(now())
+
+  @@index([customerId, createdAt])
 }

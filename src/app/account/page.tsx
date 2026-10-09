@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import PushToggle from "@/components/site/PushToggle";
 import InstallPrompt from "@/components/site/InstallPrompt";
+import LoyaltyCard from "@/components/site/LoyaltyCard";
 
 type Booking = {
   id: string;
@@ -193,6 +194,10 @@ export default function AccountPage() {
 
       <div className="mt-4">
         <InstallPrompt />
+      </div>
+
+      <div className="mt-4">
+        <LoyaltyCard />
       </div>
 
       <h2 className="mb-3 mt-8 font-display text-lg font-bold text-charcoal">مواعيدك القادمة</h2>
