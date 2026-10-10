@@ -13,10 +13,19 @@ interface Stats {
   cancelled: number;
   customersCount: number;
   totalFees: number;
-  recentBookings: any[];
+  recentBookings: RecentBooking[];
   popularServices: { service: string; count: number }[];
   siteVisits: { total: number; today: number };
 }
+
+type RecentBooking = {
+  id: string;
+  bookingNumber: string;
+  customer: { name: string };
+  service: { name: string };
+  date: string;
+  status: string;
+};
 
 const statusLabels: Record<string, string> = {
   PENDING: "بانتظار المراجعة",
