@@ -77,14 +77,14 @@ export default function BottomNav({ whatsappHref }: { whatsappHref: string }) {
                 <span className="-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-wine text-cream shadow-soft ring-4 ring-cream">
                   <Icon name={it.key} size={26} />
                 </span>
-                <span className="pb-1 text-[11px] font-bold text-wine">{it.label}</span>
+                <span className="pb-1 text-xs font-bold text-wine">{it.label}</span>
               </>
             ) : (
               <>
                 <span className={active ? "text-wine" : "text-charcoal/60"}>
                   <Icon name={it.key} />
                 </span>
-                <span className={`pb-2 text-[11px] font-semibold ${active ? "text-wine" : "text-charcoal/60"}`}>
+                <span className={`pb-2 text-xs font-semibold ${active ? "text-wine" : "text-charcoal/60"}`}>
                   {it.label}
                 </span>
               </>

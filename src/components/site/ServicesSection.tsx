@@ -60,9 +60,9 @@ export default async function ServicesSection() {
   return (
     <section
       id="services"
-      className="section-container py-16 md:py-24"
+      className="section-container py-10 md:py-24"
     >
-      <div className="mb-10 text-center">
+      <div className="mb-6 text-center md:mb-10">
         <span className="text-xs font-bold tracking-widest text-rosegold">
           خدماتنا
         </span>
@@ -76,12 +76,12 @@ export default async function ServicesSection() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8 md:gap-12">
         {Object.entries(grouped).map(([category, categoryServices]) => (
           <div key={category}>
             <div className="mb-5 flex items-end justify-between">
               <div>
-                <h3 className="font-display text-2xl font-extrabold text-charcoal">
+                <h3 className="font-display text-xl font-extrabold text-charcoal md:text-2xl">
                   {categoryNames[category] || "خدمات أخرى"}
                 </h3>
 

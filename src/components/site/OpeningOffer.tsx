@@ -71,7 +71,7 @@ export default function OpeningOffer() {
             </span>
 
             <div className="mt-5 flex justify-center">
-              <img
+              <img loading="lazy" decoding="async"
                 src="/logo-watermark.png"
                 alt="Zina Nails"
                 className="h-24 w-auto object-contain md:h-32"
