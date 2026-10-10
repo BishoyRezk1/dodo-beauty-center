@@ -9,7 +9,7 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     const standalone =
-      window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
+      window.matchMedia("(display-mode: standalone)").matches || (navigator as unknown as { standalone?: boolean }).standalone === true;
     setInstalled(standalone);
     setIos(/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone);
     const early = (window as any).__zinaBip;

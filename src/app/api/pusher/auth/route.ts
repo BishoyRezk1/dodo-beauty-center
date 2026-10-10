@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   }
 
   const session = await getServerSession(authOptions);
-  const adminId = (session?.user as any)?.id;
+  const adminId = (session?.user as unknown as { id?: string } | undefined)?.id;
   if (adminId) {
     return NextResponse.json(
       pusher.authorizeChannel(socketId, channel, { user_id: `a:${adminId}`, user_info: { role: "admin" } })

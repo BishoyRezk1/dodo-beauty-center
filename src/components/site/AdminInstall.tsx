@@ -14,7 +14,7 @@ export default function AdminInstall() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    setInstalled(window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true);
+    setInstalled(window.matchMedia("(display-mode: standalone)").matches || (navigator as unknown as { standalone?: boolean }).standalone === true);
     const early = (window as any).__zinaBip;
     if (early && isAdminManifest()) setEvt(early);
     const onPrompt = (e: Event) => {
