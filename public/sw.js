@@ -64,8 +64,8 @@ self.addEventListener("push", (event) => {
   const title = data.title || "Zina Nails";
   const options = {
     body: data.body || "",
-    icon: "/pwa-icon?size=192",
-    badge: "/pwa-icon?size=192",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
     dir: "rtl",
     lang: "ar",
     data: { url },
