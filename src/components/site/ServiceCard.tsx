@@ -38,10 +38,10 @@ export default function ServiceCard({
         <img
           src={imageUrl}
           alt={name}
-          className="h-36 w-full object-cover sm:h-44 md:h-52"
+          loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover"
         />
       ) : (
-        <div className="flex h-36 items-center justify-center bg-gray-100 text-3xl sm:h-44 sm:text-4xl md:h-52 md:text-5xl">
+        <div className="flex aspect-[4/3] items-center justify-center bg-gray-100 text-4xl">
           💇‍♀️
         </div>
       )}
@@ -78,8 +78,18 @@ export default function ServiceCard({
           </div>
         )}
 
+        <div className="mb-3 flex items-baseline gap-2">
+          <span className="text-lg font-extrabold text-wine">
+            {hasDiscount ? discountPrice : price} ج.م
+          </span>
+          {hasDiscount && (
+            <span className="text-xs text-gray-400 line-through">{price}</span>
+          )}
+          <span className="ms-auto text-xs text-gray-500">{durationMin} د</span>
+        </div>
+
         {status === "AVAILABLE" ? (
-          <div className="rounded-xl bg-pink-600 px-3 py-2.5 text-center text-sm font-bold text-white transition hover:bg-pink-700 sm:px-4 sm:py-3 sm:text-base">
+          <div className="rounded-xl bg-pink-600 flex min-h-[44px] items-center justify-center px-3 py-2.5 text-center text-sm font-bold text-white transition hover:bg-pink-700 sm:px-4 sm:py-3 sm:text-base">
             احجزي الآن
           </div>
         ) : (

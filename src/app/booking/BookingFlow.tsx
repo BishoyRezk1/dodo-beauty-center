@@ -363,7 +363,7 @@ export default function BookingFlow() {
 
                   <div className="mt-5 flex flex-col gap-3">
                     <input
-                      placeholder="الاسم بالكامل"
+                      placeholder="الاسم بالكامل" autoComplete="name" enterKeyHint="next"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="input-field bg-white"
@@ -371,7 +371,7 @@ export default function BookingFlow() {
 
                     <input
                       placeholder="رقم الهاتف"
-                      type="tel"
+                      type="tel" inputMode="tel" autoComplete="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="input-field bg-white"
@@ -407,7 +407,7 @@ export default function BookingFlow() {
                   <button
                     key={s}
                     onClick={() => setTime(s)}
-                    className={`rounded-xl border px-3 py-2 text-sm font-bold transition ${
+                    className={`min-h-[44px] rounded-xl border px-3 py-2 text-sm font-bold transition ${
                       time === s ? "border-wine bg-wine text-cream" : "border-charcoal/15 text-charcoal hover:border-wine"
                     }`}
                   >
@@ -418,7 +418,7 @@ export default function BookingFlow() {
             </>
           )}
 
-          <div className="mt-8 flex justify-between">
+          <div className="mt-8 flex justify-between gap-3 [&>button]:min-h-[44px] [&>button]:flex-1 sm:[&>button]:flex-none">
             <button onClick={() => setStep("service")} className="btn-secondary">
               رجوع
             </button>
@@ -434,19 +434,25 @@ export default function BookingFlow() {
           <h2 className="mb-6 font-display text-2xl font-bold text-charcoal">بياناتك</h2>
           <div className="flex flex-col gap-4">
             <input
-              placeholder="الاسم بالكامل"
+              placeholder="الاسم بالكامل" autoComplete="name" enterKeyHint="next"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="input-field"
             />
+            {name.length > 0 && name.trim().length < 2 && (
+              <p className="-mt-2 text-xs font-bold text-red-600">اكتبي الاسم بالكامل</p>
+            )}
             <input
               placeholder="رقم الهاتف"
-              type="tel"
+              type="tel" inputMode="tel" autoComplete="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="input-field"
               dir="ltr"
             />
+            {phone.length > 0 && phone.trim().length < 8 && (
+              <p className="-mt-2 text-xs font-bold text-red-600">رقم الهاتف لازم يكون 8 أرقام على الأقل</p>
+            )}
             <textarea
               placeholder="ملاحظات (اختياري)"
               value={notes}
@@ -454,7 +460,7 @@ export default function BookingFlow() {
               className="input-field min-h-24"
             />
           </div>
-          <div className="mt-8 flex justify-between">
+          <div className="mt-8 flex justify-between gap-3 [&>button]:min-h-[44px] [&>button]:flex-1 sm:[&>button]:flex-none">
             <button onClick={() => setStep("datetime")} className="btn-secondary">
               رجوع
             </button>
@@ -511,7 +517,7 @@ export default function BookingFlow() {
                 setCouponDiscount(null);
                 setCouponError(null);
               }}
-              className="input-field flex-1"
+              autoCapitalize="characters" autoCorrect="off" spellCheck={false} className="input-field flex-1"
               dir="ltr"
             />
             <button
