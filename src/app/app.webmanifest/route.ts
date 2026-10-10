@@ -15,9 +15,9 @@ export function GET() {
     background_color: "#FFF5F7",
     theme_color: "#E91E63",
     icons: [
-      { src: "/pwa-icon?size=192", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/pwa-icon?size=512", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/pwa-icon?size=512", sizes: "512x512", type: "image/png", purpose: "maskable" }
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
     ],
     shortcuts: [
       { name: "احجزي الآن", url: "/booking" },

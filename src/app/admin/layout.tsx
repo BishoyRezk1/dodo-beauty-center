@@ -4,7 +4,7 @@ import SessionProviderWrapper from "@/components/SessionProviderWrapper";
 export const metadata: Metadata = {
   title: "لوحة تحكم Zina Nails",
   manifest: "/admin-app.webmanifest",
-  icons: { icon: "/pwa-icon?size=192&v=admin", apple: "/pwa-icon?size=180&v=admin" },
+  icons: { icon: "/icons/admin-192.png", apple: "/icons/apple-180.png&v=admin" },
   appleWebApp: { capable: true, title: "Zina Admin", statusBarStyle: "default" }
 };
 

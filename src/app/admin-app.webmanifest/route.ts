@@ -14,9 +14,9 @@ export function GET() {
     background_color: "#FFF5F7",
     theme_color: "#4A2C35",
     icons: [
-      { src: "/pwa-icon?size=192&v=admin", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/pwa-icon?size=512&v=admin", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/pwa-icon?size=512&v=admin", sizes: "512x512", type: "image/png", purpose: "maskable" }
+      { src: "/icons/admin-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/admin-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/admin-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
     ],
     shortcuts: [
       { name: "Zina Chat", url: "/admin/chat" },
