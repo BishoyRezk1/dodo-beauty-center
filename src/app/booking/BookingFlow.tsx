@@ -145,7 +145,7 @@ export default function BookingFlow() {
       setCouponDiscount(data.discountPercent);
     } catch (err_) { const err = err_ as ErrLike;
       setCouponDiscount(null);
-      setCouponError(err.message);
+      setCouponError(err.message ?? null);
     } finally {
       setCheckingCoupon(false);
     }

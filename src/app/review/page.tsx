@@ -51,7 +51,7 @@ function ReviewForm() {
       if (!res.ok) throw new Error(data.error || "حدث خطأ");
       setDone(true);
     } catch (err_) { const err = err_ as ErrLike;
-      setError(err.message);
+      setError(err.message ?? null);
     } finally {
       setSubmitting(false);
     }
