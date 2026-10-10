@@ -40,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.site_name || "Zina Nails",
     description: settings.site_tagline || "احجزي موعدك أونلاين في Zina Nails",
     manifest: "/app.webmanifest",
-    icons: { icon: "/favicon.ico", apple: "/pwa-icon?size=180" },
+    icons: { icon: "/pwa-icon?size=64", apple: "/pwa-icon?size=180" },
     appleWebApp: { capable: true, title: "Zina Nails", statusBarStyle: "default" }
   };
 }
