@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
@@ -15,11 +16,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (unauthorized) return unauthorized;
 
   const body = await req.json();
-  const data: any = { ...body };
-  if (data.startDate) data.startDate = new Date(data.startDate);
-  if (data.endDate) data.endDate = new Date(data.endDate);
+  const data: Record<string, unknown> = { ...body };
+  if (data.startDate) data.startDate = new Date(data.startDate as string);
+  if (data.endDate) data.endDate = new Date(data.endDate as string);
 
-  const offer = await prisma.offer.update({ where: { id: params.id }, data });
+  const offer = await prisma.offer.update({ where: { id: params.id }, data: data as Prisma.OfferUpdateInput });
   return NextResponse.json(offer);
 }
 

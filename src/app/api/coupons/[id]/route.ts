@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
@@ -7,9 +8,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (unauthorized) return unauthorized;
 
   const body = await req.json();
-  const data: any = { ...body };
-  if (data.expiresAt) data.expiresAt = new Date(data.expiresAt);
-  const coupon = await prisma.coupon.update({ where: { id: params.id }, data });
+  const data: Record<string, unknown> = { ...body };
+  if (data.expiresAt) data.expiresAt = new Date(data.expiresAt as string);
+  const coupon = await prisma.coupon.update({ where: { id: params.id }, data: data as Prisma.CouponUpdateInput });
   return NextResponse.json(coupon);
 }
 

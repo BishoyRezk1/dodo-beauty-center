@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { isAllowedImageUrl } from "@/lib/chat";
 import { isMaintenanceOn } from "@/lib/maintenance";
 import { notifyBookingReceived } from "@/lib/booking-push";
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
   const status = req.nextUrl.searchParams.get("status");
 
   const bookings = await prisma.booking.findMany({
-    where: status ? { status: status as any } : {},
+    where: status ? { status: status as Prisma.BookingWhereInput["status"] } : {},
     include: {
       customer: true,
       service: true,
