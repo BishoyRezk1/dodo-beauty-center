@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -49,7 +50,7 @@ function ReviewForm() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "حدث خطأ");
       setDone(true);
-    } catch (err: any) {
+    } catch (err_) { const err = err_ as ErrLike;
       setError(err.message);
     } finally {
       setSubmitting(false);

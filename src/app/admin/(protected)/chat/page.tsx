@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Pusher from "pusher-js";
@@ -221,7 +222,7 @@ export default function AdminChatPage() {
       if (!res.ok) throw new Error(data.error || "تعذّر الإرسال");
       setMsgs((p) => merge(p.filter((m) => m.id !== optimistic?.id), [data.message as Msg]));
       loadList();
-    } catch (e: any) {
+    } catch (e_) { const e = e_ as ErrLike;
       if (optimistic) setMsgs((p) => p.filter((m) => m.id !== optimistic.id));
       setError(e.message || "تعذّر الإرسال");
     }
@@ -265,7 +266,7 @@ export default function AdminChatPage() {
       if (!res.ok) throw new Error(data.error || "فشل رفع الصورة");
       await post({ imageUrl: data.url, text: text.trim() || undefined });
       setText("");
-    } catch (err: any) {
+    } catch (err_) { const err = err_ as ErrLike;
       setError(err.message || "فشل رفع الصورة");
     } finally {
       setUploading(false);

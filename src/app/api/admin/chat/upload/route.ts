@@ -1,3 +1,4 @@
+import type { ErrLike } from "@/lib/err-like";
 import { NextRequest, NextResponse } from "next/server";
 import { uploadImage } from "@/lib/storage";
 import { requireAdmin } from "@/lib/require-admin";
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     const webp = b.toString("ascii", 0, 4) === "RIFF" && b.toString("ascii", 8, 12) === "WEBP";
     if (!jpg && !png && !webp) return NextResponse.json({ error: "الملف مش صورة صالحة" }, { status: 400 });
     return NextResponse.json({ url: await uploadImage(file, "chat") });
-  } catch (err: any) {
+  } catch (err_) { const err = err_ as ErrLike;
     return NextResponse.json({ error: err.message || "فشل رفع الصورة" }, { status: 400 });
   }
 }

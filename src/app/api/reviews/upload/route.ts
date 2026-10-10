@@ -1,3 +1,4 @@
+import type { ErrLike } from "@/lib/err-like";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { uploadImage } from "@/lib/storage";
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     if (!jpg && !png && !webp) return NextResponse.json({ error: "الملف مش صورة صالحة" }, { status: 400 });
 
     return NextResponse.json({ url: await uploadImage(file, "review-photos") });
-  } catch (err: any) {
+  } catch (err_) { const err = err_ as ErrLike;
     return NextResponse.json({ error: err.message || "فشل رفع الصورة" }, { status: 400 });
   }
 }

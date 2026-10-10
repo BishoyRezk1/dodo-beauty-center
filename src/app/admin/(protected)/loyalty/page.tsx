@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useEffect, useState } from "react";
 
@@ -47,7 +48,7 @@ export default function LoyaltyAdminPage() {
       if (!res.ok) throw new Error(d.error || "تعذّر الحفظ");
       setCfg(d);
       setNote("تم الحفظ ✅");
-    } catch (e: any) {
+    } catch (e_) { const e = e_ as ErrLike;
       setNote(e.message || "تعذّر الحفظ");
     } finally {
       setBusy(false);
@@ -71,7 +72,7 @@ export default function LoyaltyAdminPage() {
       setAdj(null);
       setNote("تم تعديل النقاط ✅");
       loadCusts(q.trim());
-    } catch (e: any) {
+    } catch (e_) { const e = e_ as ErrLike;
       setNote(e.message || "تعذّر التنفيذ");
     } finally {
       setBusy(false);

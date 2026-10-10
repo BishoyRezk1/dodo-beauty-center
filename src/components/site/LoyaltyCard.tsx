@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useEffect, useState } from "react";
 
@@ -41,7 +42,7 @@ export default function LoyaltyCard() {
       if (!res.ok) throw new Error(x.error || "تعذّر الاستبدال");
       setCode(x.code);
       await load();
-    } catch (e: any) {
+    } catch (e_) { const e = e_ as ErrLike;
       setMsg(e.message || "تعذّر الاستبدال");
     } finally {
       setBusy("");

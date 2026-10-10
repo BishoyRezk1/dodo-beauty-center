@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -245,7 +246,7 @@ export default function ChatPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "تعذّر الإرسال");
       setMsgs((p) => merge(p.filter((m) => m.id !== tmpId), [data.message as Msg]));
-    } catch (e: any) {
+    } catch (e_) { const e = e_ as ErrLike;
       setMsgs((p) => p.filter((m) => m.id !== tmpId));
       setText(t);
       setError(e.message || "تعذّر الإرسال، حاولي تاني.");
@@ -264,7 +265,7 @@ export default function ChatPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "فشل رفع الصورة");
       await send(data.url);
-    } catch (err: any) {
+    } catch (err_) { const err = err_ as ErrLike;
       setError(err.message || "فشل رفع الصورة");
     } finally {
       setUploading(false);

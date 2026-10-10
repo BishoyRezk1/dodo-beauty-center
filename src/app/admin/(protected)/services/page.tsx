@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useEffect, useState } from "react";
 import { formatEGP } from "@/lib/utils";
@@ -171,7 +172,7 @@ export default function ServicesAdminPage() {
     try {
       const url = await uploadImageDirect(file, "services");
       setForm((f) => ({ ...f, imageUrl: url }));
-    } catch (err: any) {
+    } catch (err_) { const err = err_ as ErrLike;
       alert(err.message || "فشل رفع الصورة");
     } finally {
       setUploading(false);
@@ -217,7 +218,7 @@ export default function ServicesAdminPage() {
       );
 
       await load();
-    } catch (err: any) {
+    } catch (err_) { const err = err_ as ErrLike;
       alert(err.message || "حدث خطأ");
     } finally {
       setCatalogLoading(false);

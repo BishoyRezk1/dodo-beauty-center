@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useEffect, useState } from "react";
 import { uploadImageDirect } from "@/lib/client-upload";
@@ -61,7 +62,7 @@ export default function GalleryAdminPage() {
       setPreview(null);
       setBeforePreview(null);
       load();
-    } catch (err: any) {
+    } catch (err_) { const err = err_ as ErrLike;
       setError(err.message || "حدث خطأ");
     } finally {
       setUploading(false);

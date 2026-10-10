@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useEffect, useState } from "react";
 
@@ -32,7 +33,7 @@ export default function MaintenancePage() {
       setOn(!!d.on);
       setMessage(d.message || message);
       setNote(enabled ? "تم إيقاف الموقع للعملاء" : "تم تشغيل الموقع");
-    } catch (e: any) {
+    } catch (e_) { const e = e_ as ErrLike;
       setNote(e.message || "تعذّر الحفظ");
     } finally {
       setBusy(false);

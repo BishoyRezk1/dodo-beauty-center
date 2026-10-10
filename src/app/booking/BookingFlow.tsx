@@ -1,4 +1,5 @@
 "use client";
+import type { ErrLike } from "@/lib/err-like";
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -142,7 +143,7 @@ export default function BookingFlow() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "كود غير صالح");
       setCouponDiscount(data.discountPercent);
-    } catch (err: any) {
+    } catch (err_) { const err = err_ as ErrLike;
       setCouponDiscount(null);
       setCouponError(err.message);
     } finally {
@@ -263,7 +264,7 @@ export default function BookingFlow() {
 
       setBookingNumber(bookingData.bookingNumber);
       setStep("done");
-    } catch (err: any) {
+    } catch (err_) { const err = err_ as ErrLike;
       setError(err.message || "حدث خطأ، برجاء المحاولة مرة أخرى");
     } finally {
       setSubmitting(false);

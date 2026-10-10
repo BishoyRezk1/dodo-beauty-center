@@ -1,3 +1,4 @@
+import type { ErrLike } from "@/lib/err-like";
 import { NextRequest, NextResponse } from "next/server";
 import { uploadImage } from "@/lib/storage";
 import { rateLimitDb } from "@/lib/rate-limit";
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
     const url = await uploadImage(file, "chat");
     return NextResponse.json({ url });
-  } catch (err: any) {
+  } catch (err_) { const err = err_ as ErrLike;
     return NextResponse.json({ error: err.message || "فشل رفع الصورة" }, { status: 400 });
   }
 }
