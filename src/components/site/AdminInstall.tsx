@@ -1,4 +1,5 @@
 "use client";
+import type { BIPEvent } from "@/lib/pwa-types";
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -8,19 +9,19 @@ const isAdminManifest = () =>
 
 export default function AdminInstall() {
   const pathname = usePathname() || "";
-  const [evt, setEvt] = useState<any>(null);
+  const [evt, setEvt] = useState<BIPEvent | null>(null);
   const [installed, setInstalled] = useState(true);
   const [help, setHelp] = useState(false);
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     setInstalled(window.matchMedia("(display-mode: standalone)").matches || (navigator as unknown as { standalone?: boolean }).standalone === true);
-    const early = (window as any).__zinaBip;
+    const early = window.__zinaBip;
     if (early && isAdminManifest()) setEvt(early);
     const onPrompt = (e: Event) => {
       e.preventDefault();
-      (window as any).__zinaBip = e;
-      if (isAdminManifest()) setEvt(e);
+      window.__zinaBip = e as BIPEvent;
+      if (isAdminManifest()) setEvt(e as BIPEvent);
     };
     const onInstalled = () => setInstalled(true);
     window.addEventListener("beforeinstallprompt", onPrompt);

@@ -1,9 +1,10 @@
 "use client";
+import type { BIPEvent } from "@/lib/pwa-types";
 
 import { useEffect, useState } from "react";
 
 export default function InstallPrompt() {
-  const [evt, setEvt] = useState<any>(null);
+  const [evt, setEvt] = useState<BIPEvent | null>(null);
   const [ios, setIos] = useState(false);
   const [installed, setInstalled] = useState(false);
 
@@ -12,13 +13,13 @@ export default function InstallPrompt() {
       window.matchMedia("(display-mode: standalone)").matches || (navigator as unknown as { standalone?: boolean }).standalone === true;
     setInstalled(standalone);
     setIos(/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone);
-    const early = (window as any).__zinaBip;
+    const early = window.__zinaBip;
     const href = ((document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null)?.href || "");
     if (early && !href.includes("admin-app")) setEvt(early);
     const onPrompt = (e: Event) => {
       e.preventDefault();
-      (window as any).__zinaBip = e;
-      setEvt(e);
+      window.__zinaBip = e as BIPEvent;
+      setEvt(e as BIPEvent);
     };
     const onInstalled = () => setInstalled(true);
     window.addEventListener("beforeinstallprompt", onPrompt);
