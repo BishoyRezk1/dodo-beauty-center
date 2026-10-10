@@ -32,7 +32,8 @@ export async function sendPushToAdmins(payload: {
           },
           JSON.stringify(payload)
         );
-      } catch (err: any) {
+      } catch (e) {
+        const err = e as { statusCode?: number };
         if (err?.statusCode === 404 || err?.statusCode === 410) {
           await prisma.pushSubscription
             .delete({ where: { id: sub.id } })
@@ -63,7 +64,8 @@ export async function sendPushToCustomer(
           JSON.stringify(payload),
           { TTL: 60 * 60 * 24 }
         );
-      } catch (err: any) {
+      } catch (e) {
+        const err = e as { statusCode?: number };
         if (err?.statusCode === 404 || err?.statusCode === 410) {
           await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
         }

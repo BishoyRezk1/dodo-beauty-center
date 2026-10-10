@@ -60,7 +60,7 @@ export async function rateLimitDb(
     const count = Number(rows[0]?.count ?? 1);
     return { allowed: count <= limit, remaining: Math.max(0, limit - count) };
   } catch {
-    const r: any = rateLimit(key, limit, windowMs);
+    const r = rateLimit(key, limit, windowMs) as { allowed?: boolean; remaining?: number };
     return { allowed: !!r.allowed, remaining: Number(r.remaining ?? 0) };
   }
 }
