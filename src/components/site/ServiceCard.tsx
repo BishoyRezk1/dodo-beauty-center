@@ -78,16 +78,6 @@ export default function ServiceCard({
           </div>
         )}
 
-        <div className="mb-3 flex items-baseline gap-2">
-          <span className="text-lg font-extrabold text-wine">
-            {hasDiscount ? discountPrice : price} ج.م
-          </span>
-          {hasDiscount && (
-            <span className="text-xs text-gray-400 line-through">{price}</span>
-          )}
-          <span className="ms-auto text-xs text-gray-500">{durationMin} د</span>
-        </div>
-
         {status === "AVAILABLE" ? (
           <div className="rounded-xl bg-pink-600 flex min-h-[44px] items-center justify-center px-3 py-2.5 text-center text-sm font-bold text-white transition hover:bg-pink-700 sm:px-4 sm:py-3 sm:text-base">
             احجزي الآن
