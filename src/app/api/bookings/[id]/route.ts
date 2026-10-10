@@ -1,3 +1,4 @@
+import type { Booking } from "@prisma/client";
 import { awardBookingPoints } from "@/lib/loyalty";
 import { notifyBookingStatus, notifyPaymentVerified } from "@/lib/booking-push";
 import { NextRequest, NextResponse } from "next/server";
@@ -455,7 +456,7 @@ async function updateScheduleWithValidation({
   status
 }: {
   bookingId: string;
-  original: any;
+  original: Booking;
   date?: string;
   startTime?: string;
   endTime?: string;
