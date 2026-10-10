@@ -44,7 +44,7 @@ export async function uploadImageDirect(file: File, folder: string): Promise<str
     }
 
     const text = await res.text();
-    let data: any;
+    let data: { secure_url?: string; error?: { message?: string } };
     try {
       data = JSON.parse(text);
     } catch {
@@ -69,7 +69,7 @@ export async function uploadImageDirect(file: File, folder: string): Promise<str
   }
 
   const text = await res.text();
-  let data: any;
+  let data: { url?: string; error?: string };
   try {
     data = JSON.parse(text);
   } catch {

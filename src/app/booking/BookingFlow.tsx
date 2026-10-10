@@ -254,7 +254,7 @@ export default function BookingFlow() {
       });
 
       const bookingText = await bookingRes.text();
-      let bookingData: any;
+      let bookingData: { error?: string; bookingNumber: string };
       try {
         bookingData = JSON.parse(bookingText);
       } catch {

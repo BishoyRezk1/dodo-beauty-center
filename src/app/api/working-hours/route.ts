@@ -14,9 +14,9 @@ export async function PATCH(req: NextRequest) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
-  const { days } = await req.json();
+  const { days } = (await req.json()) as { days: WorkingHoursInput[] };
   await Promise.all(
-    days.map((d: any) =>
+    days.map((d) =>
       prisma.workingHours.upsert({
         where: { dayOfWeek: d.dayOfWeek },
         update: {
@@ -41,3 +41,12 @@ export async function PATCH(req: NextRequest) {
   const hours = await prisma.workingHours.findMany({ orderBy: { dayOfWeek: "asc" } });
   return NextResponse.json(hours);
 }
+
+type WorkingHoursInput = {
+  dayOfWeek: number;
+  isOpen: boolean;
+  startTime: string;
+  endTime: string;
+  breakStart?: string | null;
+  breakEnd?: string | null;
+};
