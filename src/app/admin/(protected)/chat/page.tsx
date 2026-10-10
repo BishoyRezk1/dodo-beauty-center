@@ -1,4 +1,5 @@
 "use client";
+import type { PresenceCh, PresenceMember, PusherMembers } from "@/lib/pusher-types";
 import type { ErrLike } from "@/lib/err-like";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -77,7 +78,7 @@ export default function AdminChatPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<PresenceCh | null>(null);
   const lastTypingRef = useRef(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const markedRef = useRef<string | null>(null);
@@ -147,12 +148,12 @@ export default function AdminChatPage() {
     const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
     if (!key || !cluster) return;
     const p = new Pusher(key, { cluster, channelAuthorization: { endpoint: "/api/pusher/auth", transport: "ajax" } });
-    const ch: any = p.subscribe(`presence-chat-${selId}`);
+    const ch = p.subscribe(`presence-chat-${selId}`) as unknown as PresenceCh;
     channelRef.current = ch;
     let tt: ReturnType<typeof setTimeout> | undefined;
     const hasCustomer = () => {
       let on = false;
-      ch.members?.each((m: any) => {
+      ch.members?.each((m: PresenceMember) => {
         if (String(m.id).startsWith("c:")) on = true;
       });
       return on;
@@ -162,7 +163,7 @@ export default function AdminChatPage() {
       setCustOnline(hasCustomer());
     });
     ch.bind("pusher:subscription_error", () => setLive(false));
-    ch.bind("pusher:member_added", (m: any) => String(m.id).startsWith("c:") && setCustOnline(true));
+    ch.bind("pusher:member_added", (m: PresenceMember) => String(m.id).startsWith("c:") && setCustOnline(true));
     ch.bind("pusher:member_removed", () => setCustOnline(hasCustomer()));
     ch.bind("message", (m: Msg) => {
       if (m.sender === "CUSTOMER") setCustTyping(false);
