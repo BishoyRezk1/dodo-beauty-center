@@ -305,3 +305,16 @@ model CustomerPushSubscription {
   userAgent String?
   createdAt DateTime @default(now())
 }
+
+model PushOffer {
+  id         String    @id @default(cuid())
+  title      String
+  body       String
+  url        String    @default("/offers")
+  status     String    @default("active")
+  timesSent  Int       @default(0)
+  lastSentAt DateTime?
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}

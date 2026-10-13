@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const { title, body, url } = await req.json();
+  const { title, body, url, offerId } = await req.json();
   if (!title || !body) return NextResponse.json({ error: "title/body required" }, { status: 400 });
 
   webpush.setVapidDetails(
@@ -16,6 +16,12 @@ export async function POST(req: Request) {
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
   );
+
+  let id: string | undefined = offerId;
+  if (!id) {
+    const o = await prisma.pushOffer.create({ data: { title, body, url: url || "/offers" } });
+    id = o.id;
+  }
 
   const subs = await prisma.customerPushSubscription.findMany();
   const payload = JSON.stringify({ title, body, url: url || "/offers" });
@@ -32,6 +38,11 @@ export async function POST(req: Request) {
       }
     }
   }));
+
+  await prisma.pushOffer.update({
+    where: { id },
+    data: { timesSent: { increment: 1 }, lastSentAt: new Date(), status: "active", archivedAt: null },
+  }).catch(() => {});
 
   return NextResponse.json({ ok: true, total: subs.length, sent, removed });
 }
