@@ -1,3 +1,4 @@
+import { cairoDateToUtc } from "@/lib/cairoTime";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
@@ -41,8 +42,8 @@ export async function POST(req: NextRequest) {
   const offer = await prisma.offer.create({
     data: {
       ...parsed.data,
-      startDate: new Date(parsed.data.startDate),
-      endDate: new Date(parsed.data.endDate)
+      startDate: cairoDateToUtc(parsed.data.startDate, false),
+      endDate: cairoDateToUtc(parsed.data.endDate, true)
     }
   });
   return NextResponse.json(offer, { status: 201 });

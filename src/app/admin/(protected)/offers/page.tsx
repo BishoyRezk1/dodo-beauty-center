@@ -86,8 +86,8 @@ export default function OffersAdminPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("هل أنتِ متأكدة من حذف هذا العرض؟")) return;
-    await fetch(`/api/offers/${id}`, { method: "DELETE" });
+    if (!confirm("هل أنتِ متأكدة من أرشفة هذا العرض (هيتحفظ في الأرشيف)؟")) return;
+    await fetch(`/api/admin/offers-archive/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "archive" }) });
     load();
   }
 
@@ -192,7 +192,7 @@ export default function OffersAdminPage() {
                 onClick={() => remove(o.id)}
                 className="rounded-full border-2 border-red-400 px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50"
               >
-                حذف
+                أرشفة
               </button>
             </div>
           </div>
