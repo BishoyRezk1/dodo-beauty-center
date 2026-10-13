@@ -28,7 +28,7 @@ export default function OffersArchivePage() {
 
   const load = useCallback(async () => {
     const r = await fetch("/api/admin/offers-archive?tab=" + tab);
-    if (r.ok) setOffers(await r.json());
+    if (r.ok) setOffers(await r.json()); else setMsg("فشل تحميل العروض (" + r.status + ")");
   }, [tab]);
 
   useEffect(() => { load(); }, [load]);
