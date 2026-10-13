@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 export default function SiteGate({
   maintenance,
   message,
+  whatsappHref,
   children
 }: {
   maintenance: boolean;
   message: string;
+  whatsappHref?: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname() || "/";
@@ -20,6 +22,11 @@ export default function SiteGate({
       <h1 className="font-display text-3xl font-extrabold text-wine">Zina Nails</h1>
       <p className="max-w-sm whitespace-pre-line text-base font-semibold leading-8 text-charcoal">{message}</p>
       <p className="text-sm font-bold text-wine">#ZinaNails · #جمالك_تفاصيله_بتفرق</p>
+      {whatsappHref ? (
+        <a href={whatsappHref} target="_blank" rel="noreferrer" className="btn-primary">
+          💬 تواصل معنا واتساب
+        </a>
+      ) : null}
       <button onClick={() => window.location.reload()} className="btn-secondary">
         تحديث الصفحة
       </button>

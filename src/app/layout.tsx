@@ -68,7 +68,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
         <div className="relative z-10">
-          <SiteGate maintenance={maintenance.on} message={maintenance.message}>
+          <SiteGate maintenance={maintenance.on} message={maintenance.message} whatsappHref={whatsappHref}>
             <PushPrompt />
 <AnnouncementBanner />
             {children}
