@@ -1,3 +1,4 @@
+import PushPrompt from "@/components/PushPrompt";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import type { Metadata, Viewport } from "next";
 import { Almarai, El_Messiri } from "next/font/google";
@@ -68,7 +69,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
         <div className="relative z-10">
           <SiteGate maintenance={maintenance.on} message={maintenance.message}>
-            <AnnouncementBanner />
+            <PushPrompt />
+<AnnouncementBanner />
             {children}
             <LiquidCursorEffect />
             <VisitTracker />
