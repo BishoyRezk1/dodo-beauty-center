@@ -14,6 +14,8 @@ const navItems = [
   { href: "/admin/services", label: "الخدمات", icon: "💇" },
   { href: "/admin/chat", label: "Zina Chat", icon: "💬" },
   { href: "/admin/offers", label: "العروض", icon: "🎁" },
+  { href: "/admin/offers-archive", label: "أرشيف العروض", icon: "🗂️" },
+  { href: "/admin/push-offers", label: "إشعارات العروض", icon: "🔔" },
   { href: "/admin/coupons", label: "كوبونات الخصم", icon: "🏷️" },
   { href: "/admin/gallery", label: "معرض الأعمال", icon: "🖼️" },
   { href: "/admin/reviews", label: "التقييمات", icon: "⭐" },

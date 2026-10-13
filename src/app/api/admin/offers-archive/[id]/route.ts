@@ -14,6 +14,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (b.newPrice !== undefined) data.newPrice = Number(b.newPrice);
   if (b.startDate) data.startDate = new Date(b.startDate);
   if (b.endDate) data.endDate = new Date(b.endDate);
+  if (b.endDate && new Date(b.endDate) > new Date()) { data.isActive = true; data.archivedAt = null; }
   if (b.action === "archive") { data.isActive = false; data.archivedAt = new Date(); }
   if (b.action === "restore") { data.isActive = true; data.archivedAt = null; }
   try {
