@@ -28,6 +28,9 @@ export const config = {
     "/admin/settings/:path*",
     "/admin/chat/:path*",
     "/admin/maintenance/:path*",
-    "/admin/loyalty/:path*"
+    "/admin/loyalty/:path*",
+    "/admin/finance/:path*",
+    "/admin/offers-archive/:path*",
+    "/admin/push-offers/:path*"
   ]
 };

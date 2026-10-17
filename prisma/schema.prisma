@@ -319,3 +319,18 @@ model PushOffer {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 }
+
+model FinanceEntry {
+  id          String   @id @default(cuid())
+  type        String
+  amount      Decimal  @db.Decimal(10, 2)
+  category    String
+  method      String
+  entryDate   DateTime
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([entryDate])
+  @@index([type])
+}
