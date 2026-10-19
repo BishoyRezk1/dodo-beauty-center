@@ -334,3 +334,54 @@ model FinanceEntry {
   @@index([entryDate])
   @@index([type])
 }
+
+model FinanceAccount {
+  id                String        @id @default(cuid())
+  code              String        @unique
+  name              String
+  isActive          Boolean       @default(true)
+  openingBalance    Decimal?      @db.Decimal(14, 2)
+  openingDate       DateTime?
+  openingApprovedAt DateTime?
+  createdAt         DateTime      @default(now())
+  entries           LedgerEntry[]
+}
+
+model LedgerEntry {
+  id             String         @id @default(cuid())
+  entryNo        BigInt         @unique @default(autoincrement())
+  type           String
+  category       String
+  accountId      String
+  account        FinanceAccount @relation(fields: [accountId], references: [id])
+  amount         Decimal        @db.Decimal(14, 2)
+  entryDate      DateTime
+  description    String?
+  source         String         @default("MANUAL")
+  legacyId       String?        @unique
+  idempotencyKey String?        @unique
+  createdById    String?
+  status         String         @default("POSTED")
+  voidReason     String?
+  voidedAt       DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([entryDate])
+  @@index([accountId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actorName String?
+  action    String
+  entity    String
+  entityId  String?
+  before    Json?
+  after     Json?
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}
