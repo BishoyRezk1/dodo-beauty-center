@@ -85,7 +85,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </button>
       </aside>
 
-      <main className="flex-1 p-5 pt-20 md:p-8 md:pt-8">{children}</main>
+      <main className="min-w-0 flex-1 p-5 pt-20 md:p-8 md:pt-8">{children}</main>
     </div>
   );
 }
