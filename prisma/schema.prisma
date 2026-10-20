@@ -385,3 +385,79 @@ model AuditLog {
 
   @@index([entity, entityId])
 }
+
+model Invoice {
+  id             String           @id @default(cuid())
+  invoiceNo      BigInt           @unique @default(autoincrement())
+  customerId     String?
+  bookingId      String?
+  invoiceDate    DateTime         @default(now())
+  subtotal       Decimal          @default(0) @db.Decimal(14, 2)
+  discountTotal  Decimal          @default(0) @db.Decimal(14, 2)
+  total          Decimal          @default(0) @db.Decimal(14, 2)
+  paidTotal      Decimal          @default(0) @db.Decimal(14, 2)
+  status         String           @default("ISSUED")
+  notes          String?
+  idempotencyKey String?          @unique
+  createdById    String?
+  cancelReason   String?
+  cancelledAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  items          InvoiceItem[]
+  payments       InvoicePayment[]
+  refunds        InvoiceRefund[]
+
+  @@index([invoiceDate])
+  @@index([customerId])
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  serviceId   String?
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @db.Decimal(14, 2)
+  discount    Decimal  @default(0) @db.Decimal(14, 2)
+  lineTotal   Decimal  @db.Decimal(14, 2)
+  createdAt   DateTime @default(now())
+
+  @@index([invoiceId])
+}
+
+model InvoicePayment {
+  id               String    @id @default(cuid())
+  invoiceId        String
+  invoice          Invoice   @relation(fields: [invoiceId], references: [id])
+  accountId        String
+  amount           Decimal   @db.Decimal(14, 2)
+  paidAt           DateTime  @default(now())
+  kind             String    @default("PAYMENT")
+  bookingPaymentId String?   @unique
+  idempotencyKey   String?   @unique
+  createdById      String?
+  status           String    @default("POSTED")
+  voidReason       String?
+  voidedAt         DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([invoiceId])
+  @@index([paidAt])
+}
+
+model InvoiceRefund {
+  id             String   @id @default(cuid())
+  invoiceId      String
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id])
+  accountId      String
+  amount         Decimal  @db.Decimal(14, 2)
+  reason         String
+  refundDate     DateTime @default(now())
+  idempotencyKey String?  @unique
+  createdById    String?
+  createdAt      DateTime @default(now())
+
+  @@index([invoiceId])
+}
