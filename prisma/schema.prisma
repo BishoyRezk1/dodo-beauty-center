@@ -461,3 +461,32 @@ model InvoiceRefund {
 
   @@index([invoiceId])
 }
+
+model AccountTransfer {
+  id             String    @id @default(cuid())
+  transferNo     BigInt    @unique @default(autoincrement())
+  fromAccountId  String
+  toAccountId    String
+  amount         Decimal   @db.Decimal(14, 2)
+  transferDate   DateTime  @default(now())
+  note           String?
+  idempotencyKey String?   @unique
+  createdById    String?
+  status         String    @default("POSTED")
+  voidReason     String?
+  voidedAt       DateTime?
+  createdAt      DateTime  @default(now())
+}
+
+model AccountCount {
+  id            String   @id @default(cuid())
+  accountId     String
+  bookAmount    Decimal  @db.Decimal(14, 2)
+  countedAmount Decimal  @db.Decimal(14, 2)
+  difference    Decimal  @db.Decimal(14, 2)
+  note          String?
+  createdById   String?
+  countedAt     DateTime @default(now())
+
+  @@index([accountId, countedAt])
+}
