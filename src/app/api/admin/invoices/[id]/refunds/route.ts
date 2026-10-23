@@ -27,6 +27,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       const refunded = cents(agg._sum.amount ?? 0);
       const amt = toCents(d.amount);
       if (amt > cents(inv.paidTotal) - refunded) throw new Error("REFUNDOVER");
+      const acc0 = await accountId(tx, d.method);
+      if (!acc0) throw new Error("ACCOUNT");
+      const paidIn = await tx.invoicePayment.aggregate({ where: { invoiceId: inv.id, accountId: acc0, status: "POSTED" }, _sum: { amount: true } });
+      const refIn = await tx.invoiceRefund.aggregate({ where: { invoiceId: inv.id, accountId: acc0 }, _sum: { amount: true } });
+      if (amt > cents(paidIn._sum.amount ?? 0) - cents(refIn._sum.amount ?? 0)) throw new Error("REFUNDACC");
       const acc = await accountId(tx, d.method);
       if (!acc) throw new Error("ACCOUNT");
       const r = await tx.invoiceRefund.create({
