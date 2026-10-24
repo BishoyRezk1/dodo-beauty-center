@@ -41,6 +41,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       .catch(() => {});
   }, [pathname]);
 
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   return (
     <div className="flex min-h-screen bg-cream">
       <PushNotificationSetup />
@@ -53,7 +60,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       </div>
 
       <aside
-        className={`fixed inset-y-0 right-0 z-30 w-64 border-l border-rosegold/20 bg-white p-6 transition-transform md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 right-0 z-30 w-64 overflow-y-auto overscroll-contain border-l border-rosegold/20 bg-white p-6 pb-28 transition-transform md:static md:overflow-visible md:pb-6 md:translate-x-0 ${
           open ? "translate-x-0" : "translate-x-full md:translate-x-0"
         }`}
       >
