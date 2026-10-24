@@ -65,7 +65,7 @@ export default function DashboardPage() {
         {cards.map((c) => (
           <div key={c.label} className="card p-4">
             <p className="text-xs text-charcoal/50">{c.label}</p>
-            <p className="mt-1 font-display text-xl font-extrabold text-wine">{c.value}</p>
+            <p className="mt-1 break-words font-display text-lg font-extrabold text-wine sm:text-xl">{c.value}</p>
           </div>
         ))}
       </div>
