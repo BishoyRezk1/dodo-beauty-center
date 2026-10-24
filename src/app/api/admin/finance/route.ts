@@ -88,11 +88,11 @@ export async function GET(req: Request) {
     }),
     prisma.financeAccount.findMany({ select: { id: true, code: true } }),
     prisma.invoicePayment.findMany({
-      where: { status: "POSTED", paidAt: timeWin },
+      where: { status: "POSTED", paidAt: timeWin, invoice: { status: { not: "CANCELLED" } } },
       select: { id: true, accountId: true, amount: true, paidAt: true, invoice: { select: { invoiceNo: true } } },
     }),
     prisma.invoiceRefund.findMany({
-      where: { refundDate: timeWin },
+      where: { refundDate: timeWin, invoice: { status: { not: "CANCELLED" } } },
       select: { id: true, accountId: true, amount: true, refundDate: true, reason: true, invoice: { select: { invoiceNo: true } } },
     }),
   ]);
