@@ -44,7 +44,7 @@ export default function DashboardPage() {
 
   if (!stats) return <p className="text-charcoal/50">جاري التحميل...</p>;
 
-  const cards = [
+  const cards: { label: string; value: string | number; href?: string }[] = [
     { label: "إجمالي الحجوزات", value: stats.total },
     { label: "حجوزات اليوم", value: stats.todayCount },
     { label: "الحجوزات القادمة", value: stats.upcoming },
@@ -53,8 +53,8 @@ export default function DashboardPage() {
     { label: "الحجوزات الملغاة", value: stats.cancelled },
     { label: "عدد العملاء", value: stats.customersCount },
     { label: "إجمالي رسوم الحجز", value: formatEGP(stats.totalFees) },
-    { label: "زيارات الموقع", value: stats.siteVisits.total },
-    { label: "زيارات اليوم", value: stats.siteVisits.today }
+    { label: "زيارات الموقع", value: stats.siteVisits.total, href: "/admin/visits" },
+    { label: "زيارات اليوم", value: stats.siteVisits.today, href: "/admin/visits" }
   ];
 
   return (
@@ -63,8 +63,8 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {cards.map((c) => (
-          <div key={c.label} className="card p-4">
-            <p className="text-xs text-charcoal/50">{c.label}</p>
+          <div key={c.label} className={"card p-4" + (c.href ? " cursor-pointer" : "")} onClick={c.href ? () => { window.location.href = c.href as string; } : undefined}>
+            <p className="text-xs text-charcoal/50">{c.label}{c.href ? " ←" : ""}</p>
             <p className="mt-1 break-words font-display text-lg font-extrabold text-wine sm:text-xl">{c.value}</p>
           </div>
         ))}
