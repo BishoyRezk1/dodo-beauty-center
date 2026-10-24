@@ -12,7 +12,7 @@ export default function VisitTracker() {
     fetch("/api/analytics/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: window.location.pathname })
+      body: JSON.stringify({ path: window.location.pathname, referrer: document.referrer || "" })
     }).catch(() => {});
   }, []);
 
