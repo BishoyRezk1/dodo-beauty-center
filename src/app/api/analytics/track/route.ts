@@ -67,6 +67,9 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}));
   const path = typeof body?.path === "string" ? body.path.slice(0, 300) : "/";
+  if (path.startsWith("/admin")) {
+    return NextResponse.json({ ok: true, counted: false });
+  }
   const referrer = typeof body?.referrer === "string" ? body.referrer.slice(0, 500) : "";
   const { device, os, browser } = parseUA(ua);
 
