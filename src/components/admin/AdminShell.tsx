@@ -20,6 +20,7 @@ const navItems = [
   { href: "/admin/gallery", label: "معرض الأعمال", icon: "🖼️" },
   { href: "/admin/reviews", label: "التقييمات", icon: "⭐" },
   { href: "/admin/reports", label: "التقارير", icon: "📈" },
+  { href: "/admin/visits", label: "الزوار", icon: "🌐" },
   { href: "/admin/finance", label: "الإيرادات والمصروفات", icon: "💰" },
   { href: "/admin/invoices", label: "المبيعات والفواتير", icon: "🧾" },
   { href: "/admin/accounts", label: "الخزينة والحسابات", icon: "🏦" },

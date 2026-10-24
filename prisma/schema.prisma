@@ -207,6 +207,12 @@ model PushSubscription {
 model PageView {
   id        String   @id @default(cuid())
   path      String
+  device    String?
+  browser   String?
+  os        String?
+  source    String?
+  country   String?
+  city      String?
   createdAt DateTime @default(now())
 
   @@index([createdAt])
