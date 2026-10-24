@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 type Entry = {
   id: string; type: "income" | "expense"; amount: number; category: string;
   method: "cash" | "vodafone_cash"; date: string; description: string | null;
+  source?: "LEDGER" | "INVOICE"; invoiceNo?: number;
 };
 type Bucket = { income: number; expense: number; net: number };
 type Summary = { today: Record<string, Bucket>; month: Record<string, Bucket> };
@@ -399,12 +400,16 @@ export default function FinancePage() {
                     <div style={{ fontWeight: 800, fontSize: 15.5, color: e.type === "income" ? GREEN : RED }}>
                       {e.type === "income" ? "+" : "-"}{fmt(e.amount)}
                     </div>
+                    {e.source === "INVOICE" ? (
+                      <a href="/admin/invoices" style={{ display: "inline-block", marginTop: 6, fontSize: 11.5, fontWeight: 800, color: "#7a1d44", background: "#fdf0f5", padding: "5px 10px", borderRadius: 999 }}>🧾 فاتورة #{e.invoiceNo}</a>
+                    ) : (
                     <div style={{ display: "flex", gap: 6, marginTop: 6, justifyContent: "flex-end" }}>
                       <button onClick={() => openEdit(e)} className="fn-press" aria-label="تعديل"
                         style={{ width: 30, height: 30, borderRadius: 10, background: "#fdf0f5", fontSize: 14 }}>✏️</button>
                       <button onClick={() => remove(e)} className="fn-press" aria-label="حذف"
                         style={{ width: 30, height: 30, borderRadius: 10, background: "#fdecec", fontSize: 14 }}>🗑️</button>
                     </div>
+                    )}
                   </div>
                 </div>
               ))}
