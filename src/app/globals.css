@@ -69,3 +69,6 @@ html.winter .card {
   border-color: rgba(150, 190, 240, 0.45);
   box-shadow: 0 10px 34px -14px rgba(110, 150, 215, 0.35);
 }
+
+.winter-deco { display: none; }
+html.winter .winter-deco { display: block; }
