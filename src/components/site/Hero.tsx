@@ -17,6 +17,9 @@ export default function Hero({ siteName, tagline, whatsappHref }: { siteName: st
         }}
       />
 
+      {/* منطقة هادئة: الثلج أخف فوق وجه زينا. عدّل النسب لو ما غطّتش الوجه */}
+      <div aria-hidden="true" data-snow-calm className="pointer-events-none absolute inset-x-[20%] top-[4%] h-[46%] md:inset-x-[34%] md:top-[2%] md:h-[60%]" />
+
       <div className="section-container relative flex flex-col items-center gap-5 py-10 text-center md:gap-8 md:py-28">
         <span className="rounded-full border border-wine/30 bg-white/70 px-4 py-1.5 text-xs font-bold tracking-widest text-wine backdrop-blur-sm">
           BEAUTY · HAIR · SKIN CARE
