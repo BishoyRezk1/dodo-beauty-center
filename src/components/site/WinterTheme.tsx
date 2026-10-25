@@ -32,9 +32,10 @@ function makeSprite(): HTMLCanvasElement {
   if (g) {
     const grad = g.createRadialGradient(16, 16, 0, 16, 16, 16);
     grad.addColorStop(0, "rgba(255,255,255,1)");
-    grad.addColorStop(0.45, "rgba(255,255,255,0.95)");
-    grad.addColorStop(0.72, "rgba(214,231,252,0.55)");
-    grad.addColorStop(1, "rgba(214,231,252,0)");
+    grad.addColorStop(0.42, "rgba(255,255,255,1)");
+    grad.addColorStop(0.62, "rgba(176,205,245,0.9)");
+    grad.addColorStop(0.85, "rgba(176,205,245,0.35)");
+    grad.addColorStop(1, "rgba(176,205,245,0)");
     g.fillStyle = grad;
     g.fillRect(0, 0, 32, 32);
   }
@@ -50,13 +51,13 @@ function newFlake(w: number, h: number, scatter: boolean): Flake {
   return {
     x: rnd(0, w),
     y: scatter ? rnd(-h * 0.1, h) : -12,
-    d: r * 4,
+    d: r * 4.6,
     vy: (h + 24) / cycle,
     vx: rnd(-6, 12), // ميل جانبي خفيف
     sway: rnd(5, 13),
     ph: rnd(0, Math.PI * 2),
     phs: rnd(0.6, 1.4),
-    a: kind === 0 ? rnd(0.45, 0.8) : kind === 1 ? rnd(0.6, 0.9) : rnd(0.7, 0.95),
+    a: kind === 0 ? rnd(0.6, 0.9) : kind === 1 ? rnd(0.75, 1) : rnd(0.85, 1),
     wait: scatter ? 0 : rnd(0, 5),
   };
 }
@@ -66,12 +67,14 @@ export default function WinterTheme() {
   const isAdmin = pathname.startsWith("/admin");
   const [on, setOn] = useState(true);
   const [ready, setReady] = useState(false);
+  const [reduced, setReduced] = useState(false);
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     try {
       if (localStorage.getItem(STORAGE_KEY) === "off") setOn(false);
     } catch {}
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     setReady(true);
   }, []);
 
@@ -201,6 +204,7 @@ export default function WinterTheme() {
   }, [on, ready, isAdmin]);
 
   const toggle = () => {
+    if (reduced) window.alert("الثلج متوقف لأن جهازك مفعّل عليه «تقليل الحركة» أو «إزالة الرسوم المتحركة». غيّره من إعدادات إمكانية الوصول لو عايز تشوف الثلج.");
     const next = !on;
     setOn(next);
     try {
