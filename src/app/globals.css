@@ -58,3 +58,14 @@ body {
 @media (max-width: 767px) {
   input, textarea, select { font-size: 16px; }
 }
+
+
+/* winter theme: لمسة صقيع خفيفة، بتشتغل بس لما يكون html.winter */
+html.winter body {
+  background-image: linear-gradient(180deg, #F2F7FF 0%, #FFF5F7 38%);
+  background-attachment: fixed;
+}
+html.winter .card {
+  border-color: rgba(150, 190, 240, 0.45);
+  box-shadow: 0 10px 34px -14px rgba(110, 150, 215, 0.35);
+}

@@ -12,6 +12,7 @@ import BottomNav from "@/components/site/BottomNav";
 import PwaRegister from "@/components/site/PwaRegister";
 import AdminInstall from "@/components/site/AdminInstall";
 import SiteGate from "@/components/site/SiteGate";
+import WinterTheme from "@/components/site/WinterTheme";
 
 // Maintenance mode must take effect immediately, so never statically cache the shell.
 export const dynamic = "force-dynamic";
@@ -78,6 +79,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </SiteGate>
           <PwaRegister />
           <AdminInstall />
+          <WinterTheme />
         </div>
       </body>
     </html>
