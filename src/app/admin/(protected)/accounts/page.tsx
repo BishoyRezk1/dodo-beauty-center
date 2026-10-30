@@ -64,6 +64,26 @@ export default function AccountsPage() {
     else { setAccs([]); flash(r.data.error ?? "تعذر التحميل"); }
   }, [flash]);
   useEffect(() => { load(); }, [load]);
+  const [tr, setTr] = useState<Array<{ id: string; no: number; from: string; to: string; amount: number; date: string; note: string | null }>>([]);
+  const loadTr = useCallback(async () => {
+    try {
+      const r = await fetch("/api/admin/transfers");
+      const j = await r.json();
+      if (r.ok) setTr(j.transfers ?? []);
+    } catch {}
+  }, []);
+  useEffect(() => { loadTr(); }, [loadTr]);
+
+  async function voidTr(id: string) {
+    const why = window.prompt("سبب إلغاء التحويل؟");
+    if (!why || why.trim().length < 2) return;
+    const r = await fetch("/api/admin/transfers/" + id, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reason: why.trim() }) });
+    const j = await r.json().catch(() => ({} as { error?: string }));
+    if (!r.ok) return flash(j.error ?? "تعذر الإلغاء");
+    flash("تم إلغاء التحويل");
+    load();
+    loadTr();
+  }
 
   function open(m: Mode) {
     setMode(m); setAmount(""); setReason(""); setDate(today()); setKey(uid());
@@ -82,7 +102,7 @@ export default function AccountsPage() {
       r = await call(`/api/admin/accounts/${mode.acc.code}/count`, "POST", { counted: a, note: reason || null });
     } else {
       if (a <= 0) { setBusy(false); return flash("المبلغ لازم يكون أكبر من صفر"); }
-      r = await call("/api/admin/transfers", "POST", { from, to, amount: a, note: reason || null }, key);
+      r = await call("/api/admin/transfers", "POST", { from, to, amount: a, note: reason || null, date }, key);
     }
     setBusy(false);
     if (!r.ok) return flash(r.data.error === "invalid" ? "راجع البيانات" : r.data.error ?? "تعذر التنفيذ");
@@ -91,6 +111,7 @@ export default function AccountsPage() {
     } else flash("تمت العملية");
     setMode(null);
     load();
+    loadTr();
   }
 
   const nameOf = (c: string) => accs?.find((x) => x.code === c)?.name ?? c;
@@ -147,10 +168,24 @@ export default function AccountsPage() {
           {mode.kind === "opening" && <div style={{ fontSize: 13, opacity: 0.75, marginTop: 8, lineHeight: 1.7 }}>اكتب الرصيد الفعلي بعد العد، والتاريخ الذي تبدأ منه المحاسبة. العمليات قبل هذا التاريخ تفضل في السجل ولا تدخل في الرصيد.</div>}
           {mode.kind === "count" && <div style={{ fontSize: 13, opacity: 0.75, marginTop: 8 }}>الرصيد الدفتري الحالي: {mode.acc.bookBalance === null ? "—" : fmt(mode.acc.bookBalance)}</div>}
           <input style={inp} type="number" inputMode="decimal" placeholder={mode.kind === "count" ? "الرصيد الفعلي" : "المبلغ"} value={amount} onChange={(e) => setAmount(e.target.value)} />
-          {mode.kind === "opening" && <input style={inp} type="date" value={date} onChange={(e) => setDate(e.target.value)} />}
+          {(mode.kind === "opening" || mode.kind === "transfer") && <input style={inp} type="date" value={date} onChange={(e) => setDate(e.target.value)} />}
           <input style={inp} placeholder={mode.kind === "opening" ? (mode.acc.approved ? "سبب التعديل (إلزامي)" : "ملاحظة (اختياري)") : "ملاحظة (اختياري)"} value={reason} onChange={(e) => setReason(e.target.value)} />
           <button type="button" disabled={busy} style={{ ...btn, width: "100%", marginTop: 14, opacity: busy ? 0.6 : 1 }} onClick={() => { if (window.confirm("تأكيد العملية؟")) submit(); }}>{busy ? "..." : "تأكيد"}</button>
         </Sheet>
+      )}
+      {tr.length > 0 && (
+        <div style={{ marginTop: 18 }}>
+          <div style={{ fontWeight: 800, color: "#5a1535", marginBottom: 8 }}>آخر التحويلات</div>
+          {tr.slice(0, 15).map((t) => (
+            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #f0cfdd", borderRadius: 14, padding: "10px 12px", marginBottom: 8 }}>
+              <div style={{ flex: 1, fontSize: 13.5 }}>
+                <div style={{ fontWeight: 800 }}>{fmt(t.amount)} · من {nameOf(t.from)} إلى {nameOf(t.to)}</div>
+                <div style={{ opacity: 0.65, fontSize: 12 }}>{t.date.slice(0, 10)}{t.note ? " · " + t.note : ""}</div>
+              </div>
+              <button type="button" onClick={() => voidTr(t.id)} style={{ color: "#e03131", fontWeight: 800, fontSize: 13 }}>إلغاء</button>
+            </div>
+          ))}
+        </div>
       )}
       {mode === null && accs && accs.length === 0 && <div style={{ textAlign: "center", opacity: 0.7 }}>لا توجد حسابات</div>}
       <span style={{ display: "none" }}>{nameOf("")}</span>
