@@ -150,7 +150,7 @@ export default function FinancePage() {
         const r = await fetch("/api/admin/transfers", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Idempotency-Key": tKey || crypto.randomUUID() },
-          body: JSON.stringify({ from: tFrom, to: tFrom === "cash" ? "vodafone_cash" : "cash", amount: amt, note: form.description || null }),
+          body: JSON.stringify({ from: tFrom, to: tFrom === "cash" ? "vodafone_cash" : "cash", amount: amt, note: form.description || null, date: form.date || null }),
         });
         if (!r.ok) {
           const j = await r.json().catch(() => null);
@@ -521,6 +521,8 @@ export default function FinancePage() {
                 <div style={{ textAlign: "center", fontWeight: 800, color: "#7a1d44", marginBottom: 14 }}>
                   ⬇ إلى: {MI[tFrom === "cash" ? "vodafone_cash" : "cash"]} {ML[tFrom === "cash" ? "vodafone_cash" : "cash"]}
                 </div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, opacity: 0.7, marginBottom: 6 }}>التاريخ</div>
+                <input className="fn-input" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} style={{ marginBottom: 14 }} />
               </>
             ) : (
               <>

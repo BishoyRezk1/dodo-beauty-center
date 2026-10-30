@@ -12,6 +12,7 @@ const schema = z.object({
   to: code,
   amount: z.coerce.number().positive().max(100000000),
   note: z.string().trim().max(200).optional().nullable(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
 });
 
 export async function GET() {
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       const r = await tx.accountTransfer.create({
         data: {
           fromAccountId: from.id, toAccountId: to.id, amount: money(toCents(d.amount)),
+          transferDate: d.date ? new Date(d.date + "T12:00:00.000Z") : undefined,
           note: d.note || null, idempotencyKey: key, createdById: g.actor.id,
         },
       });
