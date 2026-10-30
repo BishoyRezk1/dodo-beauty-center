@@ -85,6 +85,8 @@ export default function FinancePage() {
   const [form, setForm] = useState<Form>({ type: "income", amount: "", category: "", method: "cash", date: "", description: "" });
 
   const [showFilters, setShowFilters] = useState(false);
+  const [isTransfer, setIsTransfer] = useState(false);
+  const [tFrom, setTFrom] = useState<"cash" | "vodafone_cash">("cash");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [ftype, setFtype] = useState("");
@@ -123,12 +125,14 @@ export default function FinancePage() {
   }, [load]);
 
   function openNew() {
+    setIsTransfer(false);
     setEditId(null); setSheetErr("");
     setForm((f) => ({ type: f.type, amount: "", category: "", method: f.method, date: today || cairoToday(), description: "" }));
     setSheetOpen(true);
   }
 
   function openEdit(e: Entry) {
+    setIsTransfer(false);
     setEditId(e.id); setSheetErr("");
     setForm({ type: e.type, amount: String(e.amount), category: e.category, method: e.method, date: e.date, description: e.description || "" });
     setSheetOpen(true);
@@ -138,6 +142,28 @@ export default function FinancePage() {
     setSheetErr("");
     const amt = parseFloat(form.amount);
     if (!(amt > 0)) { setSheetErr("اكتبي مبلغ صحيح"); return; }
+    if (isTransfer) {
+      setBusy(true);
+      try {
+        const r = await fetch("/api/admin/transfers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+          body: JSON.stringify({ from: tFrom, to: tFrom === "cash" ? "vodafone_cash" : "cash", amount: amt, note: form.description || null }),
+        });
+        if (!r.ok) {
+          const j = await r.json().catch(() => null);
+          setSheetErr((j && j.error) || "فشل التحويل، حاولي تاني");
+        } else {
+          setSheetOpen(false);
+          setToast("✓ تم التحويل");
+          await load();
+        }
+      } catch {
+        setSheetErr("حصل خطأ في الاتصال");
+      }
+      setBusy(false);
+      return;
+    }
     if (!form.category) { setSheetErr("اختاري التصنيف"); return; }
     if (!form.date) { setSheetErr("اختاري التاريخ"); return; }
     setBusy(true);
@@ -430,22 +456,49 @@ export default function FinancePage() {
 
             <div style={{ display: "flex", gap: 4, background: "#fdeaf2", padding: 4, borderRadius: 16, marginBottom: 14 }}>
               {(["income", "expense"] as const).map((t) => (
-                <button key={t} className="fn-press" onClick={() => setForm({ ...form, type: t, category: "" })}
+                <button key={t} className="fn-press" onClick={() => { setIsTransfer(false); setForm({ ...form, type: t, category: "" }); }}
                   style={{ flex: 1, padding: "11px 0", borderRadius: 12, fontWeight: 800, fontSize: 15,
-                    background: form.type === t ? (t === "income" ? GREEN : RED) : "transparent",
-                    color: form.type === t ? "#fff" : "#7a1d44", transition: "all .15s" }}>
+                    background: !isTransfer && form.type === t ? (t === "income" ? GREEN : RED) : "transparent",
+                    color: !isTransfer && form.type === t ? "#fff" : "#7a1d44", transition: "all .15s" }}>
                   {t === "income" ? "↑ إيراد" : "↓ مصروف"}
                 </button>
               ))}
+              {!editId && (
+                <button className="fn-press" onClick={() => { setIsTransfer(true); setSheetErr(""); }}
+                  style={{ flex: 1, padding: "11px 0", borderRadius: 12, fontWeight: 800, fontSize: 15,
+                    background: isTransfer ? "#7a1d44" : "transparent",
+                    color: isTransfer ? "#fff" : "#7a1d44", transition: "all .15s" }}>
+                  ⇄ تحويل
+                </button>
+              )}
             </div>
 
             <div style={{ position: "relative", marginBottom: 14 }}>
               <input className="fn-input" type="number" inputMode="decimal" step="0.01" min="0" placeholder="٠"
                 value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                style={{ fontSize: 34, fontWeight: 800, textAlign: "center", padding: "16px 56px", color: form.type === "income" ? GREEN : RED }} />
+                style={{ fontSize: 34, fontWeight: 800, textAlign: "center", padding: "16px 56px", color: isTransfer ? "#7a1d44" : form.type === "income" ? GREEN : RED }} />
               <span style={{ position: "absolute", top: "50%", transform: "translateY(-50%)", right: 18, fontWeight: 800, opacity: 0.5 }}>ج</span>
             </div>
 
+            {isTransfer ? (
+              <>
+                <div style={{ fontSize: 12.5, fontWeight: 700, opacity: 0.7, marginBottom: 6 }}>من حساب</div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                  {(["cash", "vodafone_cash"] as const).map((k) => (
+                    <button key={k} className="fn-press" onClick={() => setTFrom(k)}
+                      style={{ flex: 1, padding: "12px 8px", borderRadius: 14, fontWeight: 800, fontSize: 14,
+                        border: "1.5px solid " + (tFrom === k ? "#7a1d44" : "#f0cfdd"),
+                        background: tFrom === k ? "#7a1d44" : "#fff", color: tFrom === k ? "#fff" : "#5a2a3d", transition: "all .15s" }}>
+                      {MI[k]} {ML[k]}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ textAlign: "center", fontWeight: 800, color: "#7a1d44", marginBottom: 14 }}>
+                  ⬇ إلى: {MI[tFrom === "cash" ? "vodafone_cash" : "cash"]} {ML[tFrom === "cash" ? "vodafone_cash" : "cash"]}
+                </div>
+              </>
+            ) : (
+              <>
             <div style={{ fontSize: 12.5, fontWeight: 700, opacity: 0.7, marginBottom: 6 }}>التصنيف</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
               {cats.map((c) => (
@@ -475,6 +528,9 @@ export default function FinancePage() {
               <input className="fn-input" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} style={{ flex: 1, padding: "9px 12px" }} />
             </div>
 
+            </>
+            )}
+
             <textarea className="fn-input" rows={2} maxLength={300} placeholder="وصف (اختياري)"
               value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} style={{ marginBottom: 12, resize: "none" }} />
 
@@ -482,9 +538,9 @@ export default function FinancePage() {
 
             <button disabled={busy} onClick={save} className="fn-press"
               style={{ width: "100%", padding: 16, borderRadius: 16, fontWeight: 800, fontSize: 16, color: "#fff", opacity: busy ? 0.7 : 1,
-                background: form.type === "income" ? "linear-gradient(135deg,#2f9e44,#51cf66)" : "linear-gradient(135deg,#e03131,#ff6b6b)",
+                background: isTransfer ? "linear-gradient(135deg,#7a1d44,#c2185b)" : form.type === "income" ? "linear-gradient(135deg,#2f9e44,#51cf66)" : "linear-gradient(135deg,#e03131,#ff6b6b)",
                 boxShadow: "0 10px 22px rgba(0,0,0,.15)" }}>
-              {busy ? "جاري الحفظ..." : editId ? "حفظ التعديل" : form.type === "income" ? "تسجيل الإيراد" : "تسجيل المصروف"}
+              {busy ? "جاري الحفظ..." : editId ? "حفظ التعديل" : isTransfer ? "تسجيل التحويل" : form.type === "income" ? "تسجيل الإيراد" : "تسجيل المصروف"}
             </button>
             <button onClick={() => setSheetOpen(false)} style={{ width: "100%", padding: 12, marginTop: 6, fontWeight: 700, opacity: 0.6 }}>إلغاء</button>
           </div>
