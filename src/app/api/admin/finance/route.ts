@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { DATE_RE, bucket, cairoToday, dayEnd, dayStart, entrySchema, noon } from "@/lib/finance";
 import { audit, requireOwner, serializeLedger } from "@/lib/ledger";
+import { monthLocked } from "@/lib/archive";
 
 export const dynamic = "force-dynamic";
 
@@ -184,6 +185,7 @@ export async function POST(req: Request) {
 
   const account = await prisma.financeAccount.findFirst({ where: { code: d.method, isActive: true } });
   if (!account) return NextResponse.json({ error: "الحساب غير موجود" }, { status: 400 });
+  if (await monthLocked(d.date.slice(0, 7))) return NextResponse.json({ error: "الشهر مقفول. افتحيه من الأرشيف الشهري أولاً" }, { status: 423 });
 
   const amount = Math.round(d.amount * 100) / 100;
   const key = (req.headers.get("idempotency-key") || "").slice(0, 100) || null;

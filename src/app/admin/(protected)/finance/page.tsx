@@ -175,7 +175,7 @@ export default function FinancePage() {
         headers: H,
         body: JSON.stringify({ ...form, amount: amt }),
       });
-      if (!r.ok) setSheetErr("فشل الحفظ، حاولي تاني");
+      if (!r.ok) { const j = await r.json().catch(() => null); setSheetErr(r.status === 423 && j && j.error ? j.error : "فشل الحفظ، حاولي تاني"); }
       else {
         setSheetOpen(false);
         setToast(editId ? "✓ تم التعديل" : "✓ تم الحفظ");

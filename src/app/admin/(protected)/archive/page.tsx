@@ -35,6 +35,8 @@ export default function ArchivePage() {
   const [sel, setSel] = useState<string | null>(null);
   const [data, setData] = useState<Data | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const [lockedList, setLockedList] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -46,7 +48,7 @@ export default function ArchivePage() {
       list.push(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"));
     }
     setMonths(list);
-    fetch("/api/admin/archive").then((r) => r.json()).then((j) => setSaved(j.saved || [])).catch(() => {});
+    fetch("/api/admin/archive").then((r) => r.json()).then((j) => { setSaved(j.saved || []); setLockedList(j.locked || []); }).catch(() => {});
   }, []);
 
   async function open(m: string) {
@@ -55,7 +57,24 @@ export default function ArchivePage() {
       const r = await fetch("/api/admin/archive?month=" + m);
       const j = await r.json();
       if (!r.ok) setErr(j.error || "تعذر التحميل");
-      else { setData(j.data); setIsSaved(!!j.saved); }
+      else { setData(j.data); setIsSaved(!!j.saved); setLocked(!!j.locked); }
+    } catch { setErr("حصل خطأ في الاتصال"); }
+    setBusy(false);
+  }
+
+  async function act(a: "lock" | "unlock") {
+    if (!sel) return;
+    if (!window.confirm(a === "lock" ? "قفل الشهر؟ مش هتقدري تعدّلي أو تلغي أي حاجة فيه إلا لو فتحتيه." : "فتح الشهر للتعديل؟")) return;
+    setBusy(true); setErr("");
+    try {
+      const r = await fetch("/api/admin/archive", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ month: sel, action: a }) });
+      const j = await r.json();
+      if (!r.ok) setErr(j.error || "تعذر التنفيذ");
+      else {
+        setData(j.data); setIsSaved(true); setLocked(!!j.locked);
+        setSaved((s) => (s.includes(sel) ? s : [...s, sel]));
+        setLockedList((l) => (a === "lock" ? (l.includes(sel) ? l : [...l, sel]) : l.filter((x) => x !== sel)));
+      }
     } catch { setErr("حصل خطأ في الاتصال"); }
     setBusy(false);
   }
@@ -78,7 +97,7 @@ export default function ArchivePage() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {months.map((m) => (
           <button key={m} onClick={() => open(m)} style={{ padding: "10px 14px", borderRadius: 14, fontWeight: 800, border: "1.5px solid " + (sel === m ? "#7a1d44" : "#f0cfdd"), background: sel === m ? "#7a1d44" : "#fff", color: sel === m ? "#fff" : "#5a2a3d" }}>
-            📁 {mname(m)} {saved.includes(m) ? "✓" : ""}
+            📁 {mname(m)} {lockedList.includes(m) ? "🔒" : saved.includes(m) ? "✓" : ""}
           </button>
         ))}
       </div>
@@ -90,8 +109,9 @@ export default function ArchivePage() {
         <div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
             <button style={btn} onClick={() => download(data)}>⬇ تحميل ملف {data.month}</button>
-            <button style={{ ...btn, background: "#7a1d44" }} onClick={save} disabled={busy}>{isSaved ? "تحديث الأرشيف" : "حفظ في الأرشيف"}</button>
-            <span style={{ opacity: 0.6, fontSize: 13 }}>{isSaved ? "نسخة محفوظة" : "عرض مباشر (لسه مش محفوظ)"}</span>
+            <button style={{ ...btn, background: "#7a1d44", opacity: locked ? 0.5 : 1 }} onClick={save} disabled={busy || locked}>{isSaved ? "تحديث الأرشيف" : "حفظ في الأرشيف"}</button>
+            <button style={{ ...btn, background: locked ? "#e03131" : "#2f9e44" }} onClick={() => act(locked ? "unlock" : "lock")} disabled={busy}>{locked ? "🔓 فتح الشهر" : "🔒 قفل الشهر"}</button>
+            <span style={{ opacity: 0.6, fontSize: 13 }}>{locked ? "🔒 الشهر مقفول" : isSaved ? "نسخة محفوظة" : "عرض مباشر (لسه مش محفوظ)"}</span>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>

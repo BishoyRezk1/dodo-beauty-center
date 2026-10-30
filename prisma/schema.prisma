@@ -501,5 +501,6 @@ model MonthlyArchive {
   id      String   @id @default(cuid())
   month   String   @unique
   data    Json
+  locked  Boolean  @default(false)
   savedAt DateTime @default(now())
 }

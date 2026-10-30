@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { entrySchema, noon } from "@/lib/finance";
 import { audit, requireOwner, serializeLedger } from "@/lib/ledger";
+import { monthLocked } from "@/lib/archive";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     include,
   });
   if (!before) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if ((await monthLocked(before.entryDate.toISOString().slice(0, 7))) || (await monthLocked(d.date.slice(0, 7)))) return NextResponse.json({ error: "الشهر مقفول. افتحيه من الأرشيف الشهري أولاً" }, { status: 423 });
 
   const updated = await prisma.$transaction(async (tx) => {
     const e = await tx.ledgerEntry.update({
@@ -68,6 +70,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
   const e = await prisma.ledgerEntry.findUnique({ where: { id: params.id }, include });
   if (!e) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (await monthLocked(e.entryDate.toISOString().slice(0, 7))) return NextResponse.json({ error: "الشهر مقفول. افتحيه من الأرشيف الشهري أولاً" }, { status: 423 });
   if (e.status === "VOID") return NextResponse.json({ ok: true });
 
   await prisma.$transaction(async (tx) => {

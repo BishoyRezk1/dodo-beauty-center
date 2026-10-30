@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prevMonthCairo, saveMonth } from "@/lib/archive";
+import { monthLocked, prevMonthCairo, saveMonth, setLock } from "@/lib/archive";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +9,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const month = prevMonthCairo();
-  await saveMonth(month);
+  if (!(await monthLocked(month))) {
+    await saveMonth(month);
+    await setLock(month, true);
+  }
   return NextResponse.json({ ok: true, month });
 }

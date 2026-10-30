@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { audit, requireOwner } from "@/lib/ledger";
 import { money, toCents } from "@/lib/invoices";
+import { monthLocked } from "@/lib/archive";
+import { cairoDay } from "@/lib/treasury";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +40,7 @@ export async function POST(req: Request) {
   if (!p.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const d = p.data;
   if (d.from === d.to) return NextResponse.json({ error: "اختر حسابين مختلفين" }, { status: 400 });
+  if (await monthLocked((d.date || cairoDay(new Date())).slice(0, 7))) return NextResponse.json({ error: "الشهر مقفول. افتحيه من الأرشيف الشهري أولاً" }, { status: 423 });
   const key = (req.headers.get("idempotency-key") || "").slice(0, 100) || null;
   if (key) {
     const ex = await prisma.accountTransfer.findUnique({ where: { idempotencyKey: key } });

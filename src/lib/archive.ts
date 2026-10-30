@@ -77,3 +77,16 @@ export async function saveMonth(month: string) {
   await prisma.monthlyArchive.upsert({ where: { month }, create: { month, data: json }, update: { data: json, savedAt: new Date() } });
   return data;
 }
+
+export async function monthLocked(month: string) {
+  try {
+    const r = await prisma.monthlyArchive.findUnique({ where: { month }, select: { locked: true } });
+    return !!r?.locked;
+  } catch {
+    return false;
+  }
+}
+
+export async function setLock(month: string, locked: boolean) {
+  await prisma.monthlyArchive.update({ where: { month }, data: { locked } });
+}

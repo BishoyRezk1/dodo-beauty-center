@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { audit, requireOwner } from "@/lib/ledger";
+import { monthLocked } from "@/lib/archive";
+import { cairoDay } from "@/lib/treasury";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   const t = await prisma.accountTransfer.findUnique({ where: { id: params.id } });
   if (!t) return NextResponse.json({ error: "غير موجود" }, { status: 404 });
   if (t.status !== "POSTED") return NextResponse.json({ ok: true, already: true });
+  if (await monthLocked(cairoDay(t.transferDate).slice(0, 7))) return NextResponse.json({ error: "الشهر مقفول. افتحيه من الأرشيف الشهري أولاً" }, { status: 423 });
   await prisma.$transaction(async (tx) => {
     await tx.accountTransfer.update({ where: { id: t.id }, data: { status: "VOID", voidReason: p.data.reason, voidedAt: new Date() } });
     await audit(tx, {
