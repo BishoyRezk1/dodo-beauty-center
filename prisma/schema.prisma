@@ -496,3 +496,10 @@ model AccountCount {
 
   @@index([accountId, countedAt])
 }
+
+model MonthlyArchive {
+  id      String   @id @default(cuid())
+  month   String   @unique
+  data    Json
+  savedAt DateTime @default(now())
+}
