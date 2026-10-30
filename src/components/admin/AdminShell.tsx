@@ -23,9 +23,6 @@ const navItems = [
   { href: "/admin/visits", label: "الزوار", icon: "🌐" },
   { href: "/admin/finance", label: "الإيرادات والمصروفات", icon: "💰" },
   { href: "/admin/invoices", label: "المبيعات والفواتير", icon: "🧾" },
-  { href: "/admin/accounts", label: "الخزينة والحسابات", icon: "🏦" },
-  { href: "/admin/archive", label: "الأرشيف الشهري", icon: "🗂️" },
-  { href: "/admin/daily-close", label: "إغلاق اليوم", icon: "📒" },
   { href: "/admin/loyalty", label: "نقاط الولاء", icon: "🏆" },
   { href: "/admin/maintenance", label: "إيقاف / تشغيل الموقع", icon: "🛠️" },
   { href: "/admin/settings", label: "الإعدادات", icon: "⚙️" }

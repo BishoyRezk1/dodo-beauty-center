@@ -85,6 +85,7 @@ export default function FinancePage() {
   const [form, setForm] = useState<Form>({ type: "income", amount: "", category: "", method: "cash", date: "", description: "" });
 
   const [showFilters, setShowFilters] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isTransfer, setIsTransfer] = useState(false);
   const [tFrom, setTFrom] = useState<"cash" | "vodafone_cash">("cash");
   const [from, setFrom] = useState("");
@@ -341,6 +342,29 @@ export default function FinancePage() {
 
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <div className="font-display" style={{ fontWeight: 800, fontSize: 18, color: "#5a1535", flex: 1 }}>سجل العمليات</div>
+        <div style={{ position: "relative" }}>
+          <button onClick={() => setMenuOpen((v) => !v)} className="fn-press"
+            style={{ padding: "8px 14px", borderRadius: 999, border: "1.5px solid #f0cfdd", background: menuOpen ? "#fdeaf2" : "#fff", fontWeight: 700, fontSize: 13 }}>
+            ☰ المزيد
+          </button>
+          {menuOpen && (
+            <>
+              <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+              <div className="fn-card" style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 50, minWidth: 220, padding: 6, background: "#fff", boxShadow: "0 14px 30px rgba(90,21,53,.22)", borderRadius: 16 }}>
+                {[
+                  ["/admin/accounts", "🏦", "الأرصدة والتحويلات"],
+                  ["/admin/archive", "🗂️", "الأرشيف الشهري"],
+                  ["/admin/daily-close", "📒", "إغلاق اليوم"],
+                  ["/admin/invoices", "🧾", "المبيعات والفواتير"],
+                ].map(([href, ic, label]) => (
+                  <a key={href} href={href} style={{ display: "flex", gap: 10, alignItems: "center", padding: "12px 14px", borderRadius: 12, fontWeight: 700, fontSize: 14, color: "#5a1535", textDecoration: "none" }}>
+                    <span>{ic}</span><span>{label}</span>
+                  </a>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
         <button onClick={() => setShowFilters((s) => !s)} className="fn-press"
           style={{ position: "relative", padding: "8px 14px", borderRadius: 999, border: "1.5px solid #f0cfdd", background: showFilters ? "#fdeaf2" : "#fff", fontWeight: 700, fontSize: 13 }}>
           🎚️ فلاتر
