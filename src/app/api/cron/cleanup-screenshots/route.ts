@@ -13,7 +13,7 @@ const RETENTION_DAYS = 30;
 
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization");
-  if (!auth || auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || !auth || auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
   }
 

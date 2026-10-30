@@ -88,6 +88,7 @@ export default function FinancePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isTransfer, setIsTransfer] = useState(false);
   const [tFrom, setTFrom] = useState<"cash" | "vodafone_cash">("cash");
+  const [tKey, setTKey] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [ftype, setFtype] = useState("");
@@ -148,7 +149,7 @@ export default function FinancePage() {
       try {
         const r = await fetch("/api/admin/transfers", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+          headers: { "Content-Type": "application/json", "Idempotency-Key": tKey || crypto.randomUUID() },
           body: JSON.stringify({ from: tFrom, to: tFrom === "cash" ? "vodafone_cash" : "cash", amount: amt, note: form.description || null }),
         });
         if (!r.ok) {
@@ -156,7 +157,7 @@ export default function FinancePage() {
           setSheetErr((j && j.error) || "فشل التحويل، حاولي تاني");
         } else {
           setSheetOpen(false);
-          setToast("✓ تم التحويل");
+          setToast("✓ تم التحويل"); setTKey(crypto.randomUUID());
           await load();
         }
       } catch {
@@ -488,7 +489,7 @@ export default function FinancePage() {
                 </button>
               ))}
               {!editId && (
-                <button className="fn-press" onClick={() => { setIsTransfer(true); setSheetErr(""); }}
+                <button className="fn-press" onClick={() => { setIsTransfer(true); setSheetErr(""); if (!tKey) setTKey(crypto.randomUUID()); }}
                   style={{ flex: 1, padding: "11px 0", borderRadius: 12, fontWeight: 800, fontSize: 15,
                     background: isTransfer ? "#7a1d44" : "transparent",
                     color: isTransfer ? "#fff" : "#7a1d44", transition: "all .15s" }}>
