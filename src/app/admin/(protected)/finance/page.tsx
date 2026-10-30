@@ -317,7 +317,7 @@ export default function FinancePage() {
 
           <div style={{ display: "flex", gap: 8, background: "#fff3f8", border: "1px dashed #f0b7cf", borderRadius: 14, padding: "10px 12px", fontSize: 12, opacity: 0.85, marginBottom: 16 }}>
             <span>ℹ️</span>
-            <span>الأرقام دي صافي العمليات المسجّلة بس، مش رصيد الخزينة الفعلي (مفيش رصيد افتتاحي ولا مطابقة جرد).</span>
+            <span>الأرقام دي صافي عمليات الشهر المسجّلة. الرصيد الفعلي للخزينة في «الأرصدة والتحويلات».</span>
           </div>
         </>
       )}
