@@ -86,6 +86,14 @@ export default function FinancePage() {
 
   const [showFilters, setShowFilters] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [bal, setBal] = useState<{ cash: number | null; voda: number | null } | null>(null);
+  useEffect(() => {
+    fetch("/api/admin/accounts").then((r) => r.json()).then((j) => {
+      const a = (j.accounts || []) as Array<{ code: string; bookBalance: number | null }>;
+      const g = (c: string) => a.find((x) => x.code === c)?.bookBalance ?? null;
+      setBal({ cash: g("cash"), voda: g("vodafone_cash") });
+    }).catch(() => {});
+  }, [entries]);
   const [isTransfer, setIsTransfer] = useState(false);
   const [tFrom, setTFrom] = useState<"cash" | "vodafone_cash">("cash");
   const [tKey, setTKey] = useState("");
@@ -317,7 +325,7 @@ export default function FinancePage() {
 
           <div style={{ display: "flex", gap: 8, background: "#fff3f8", border: "1px dashed #f0b7cf", borderRadius: 14, padding: "10px 12px", fontSize: 12, opacity: 0.85, marginBottom: 16 }}>
             <span>ℹ️</span>
-            <span>الأرقام دي صافي عمليات الشهر المسجّلة. الرصيد الفعلي للخزينة في «الأرصدة والتحويلات».</span>
+            <span>الأرقام دي حركة الشهر بس (من غير الرصيد المرحّل).{bal && <> <b>رصيد الخزينة الفعلي: {fmt((bal.cash ?? 0) + (bal.voda ?? 0))}</b> (نقدي {bal.cash === null ? "—" : fmt(bal.cash)} · فودافون {bal.voda === null ? "—" : fmt(bal.voda)})</>}</span>
           </div>
         </>
       )}
