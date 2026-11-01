@@ -29,8 +29,6 @@ export default async function ServicesSection() {
     general: "خدمات أخرى"
   };
 
-  // الخدمات ذات السعر تظهر أولاً داخل كل تصنيف، ثم الخدمات بدون سعر.
-  // نحافظ على sortOrder داخل كل مجموعة.
   const grouped = services.reduce<Record<string, typeof services>>(
     (acc, service) => {
       const key = service.category || "general";
@@ -57,43 +55,50 @@ export default async function ServicesSection() {
     });
   });
 
+  const entries = Object.entries(grouped);
+
   return (
-    <section
-      id="services"
-      className="section-container py-10 md:py-24"
-    >
-      <div className="mb-6 text-center md:mb-10">
-        <span className="text-xs font-bold tracking-widest text-rosegold">
-          خدماتنا
-        </span>
-
-        <h2 className="mt-2 font-display text-3xl font-extrabold text-charcoal md:text-4xl">
-          اختاري خدمتك المفضلة
-        </h2>
-
-        <p className="mx-auto mt-3 max-w-xl text-sm text-charcoal/55">
+    <section id="services" className="section-container py-14 md:py-28">
+      <div className="mb-8 text-center md:mb-12">
+        <span className="zn-kicker">خدماتنا</span>
+        <h2 className="zn-title mt-2">اختاري خدمتك المفضلة</h2>
+        <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-gradient-to-l from-wine to-rosegold" />
+        <p className="mx-auto mt-4 max-w-xl text-sm text-charcoal/60 md:text-base">
           خدمات احترافية للعناية بالشعر والبشرة والأظافر والمكياج والعروس.
         </p>
       </div>
 
-      <div className="flex flex-col gap-8 md:gap-12">
-        {Object.entries(grouped).map(([category, categoryServices]) => (
-          <div key={category}>
-            <div className="mb-5 flex items-end justify-between">
-              <div>
-                <h3 className="font-display text-xl font-extrabold text-charcoal md:text-2xl">
-                  {categoryNames[category] || "خدمات أخرى"}
-                </h3>
+      {entries.length > 1 && (
+        <nav
+          aria-label="تصنيفات الخدمات"
+          className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-2 md:mx-0 md:mb-12 md:flex-wrap md:justify-center md:overflow-visible md:px-0"
+        >
+          {entries.map(([category]) => (
+            <a
+              key={category}
+              href={`#cat-${category}`}
+              className="shrink-0 rounded-full border border-wine/25 bg-white/80 px-4 py-2 text-sm font-bold text-wine shadow-sm transition hover:bg-wine hover:text-cream"
+            >
+              {categoryNames[category] || "خدمات أخرى"}
+            </a>
+          ))}
+        </nav>
+      )}
 
-                <div className="mt-2 h-1 w-12 rounded-full bg-rosegold" />
-              </div>
-
-              <span className="text-xs text-charcoal/40">
+      <div className="flex flex-col gap-10 md:gap-16">
+        {entries.map(([category, categoryServices]) => (
+          <div key={category} id={`cat-${category}`}>
+            <div className="mb-5 flex items-center gap-3 md:mb-7">
+              <h3 className="font-display text-xl font-extrabold text-charcoal md:text-3xl">
+                {categoryNames[category] || "خدمات أخرى"}
+              </h3>
+              <span className="h-px flex-1 bg-gradient-to-l from-rosegold/40 to-transparent" />
+              <span className="rounded-full bg-blush/60 px-3 py-1 text-xs font-bold text-wine">
                 {categoryServices.length} خدمة
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 max-[380px]:grid-cols-1 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 md:gap-6 lg:grid-cols-3 lg:gap-6">
+            <div className="grid grid-cols-2 gap-3 max-[380px]:grid-cols-1 sm:gap-5 md:grid-cols-3 md:gap-7">
               {categoryServices.map((s) => (
                 <ServiceCard
                   key={s.id}
