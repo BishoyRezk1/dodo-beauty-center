@@ -72,3 +72,15 @@ html.winter .card {
 
 .winter-deco { display: none; }
 html.winter .winter-deco { display: block; }
+
+.zn-glass {
+  @apply rounded-2xl border border-white/60 bg-white/60 shadow-soft backdrop-blur-md;
+}
+
+.zn-kicker {
+  @apply text-xs font-bold tracking-widest text-wine;
+}
+
+.zn-title {
+  @apply font-display text-2xl font-extrabold text-charcoal md:text-4xl;
+}
