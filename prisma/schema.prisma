@@ -493,6 +493,8 @@ model AccountCount {
   note          String?
   createdById   String?
   countedAt     DateTime @default(now())
+  settledAt     DateTime?
+  settleNote    String?
 
   @@index([accountId, countedAt])
 }

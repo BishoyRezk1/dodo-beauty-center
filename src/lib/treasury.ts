@@ -86,7 +86,7 @@ export async function summarizeOne(a: Acc) {
     transfersOut: p(tOut),
     bookBalance: book === null ? null : p(book),
     lastCount: last
-      ? { counted: Number(last.countedAmount), book: Number(last.bookAmount), difference: Number(last.difference), date: last.countedAt.toISOString() }
+      ? { id: last.id, counted: Number(last.countedAmount), book: Number(last.bookAmount), difference: Number(last.difference), date: last.countedAt.toISOString(), settledAt: last.settledAt ? last.settledAt.toISOString() : null, settleNote: last.settleNote }
       : null,
   };
 }

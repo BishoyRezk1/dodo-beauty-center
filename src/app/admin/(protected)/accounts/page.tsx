@@ -114,6 +114,16 @@ export default function AccountsPage() {
     loadTr();
   }
 
+  async function settle(id: string) {
+    const note = window.prompt("سبب أو تفسير العجز؟ (مثلاً: فرق عد، مصروف غير مسجل)");
+    if (!note || note.trim().length < 2) return;
+    const r = await fetch("/api/admin/count-settle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, note: note.trim() }) });
+    const j = await r.json().catch(() => ({} as { error?: string }));
+    if (!r.ok) return flash(j.error ?? "تعذر التسوية");
+    flash("تمت تسوية العجز");
+    load();
+  }
+
   const nameOf = (c: string) => accs?.find((x) => x.code === c)?.name ?? c;
 
   return (
@@ -142,6 +152,12 @@ export default function AccountsPage() {
               <b style={{ color: a.lastCount.difference === 0 ? "#1b7f4b" : "#b42318" }}>{fmt(a.lastCount.difference)}</b>
             </div>
           )}
+          {(() => {
+            const lc = a.lastCount as unknown as { id?: string; difference: number; settledAt?: string | null; settleNote?: string | null } | null;
+            if (!lc || !lc.id || lc.difference === 0) return null;
+            if (lc.settledAt) return <div style={{ fontSize: 12.5, marginTop: 6, color: "#1b7f4b" }}>✓ العجز اتسوّى: {lc.settleNote}</div>;
+            return <button type="button" style={{ ...btn2, marginTop: 8, width: "100%" }} onClick={() => settle(lc.id as string)}>تسوية العجز {fmt(lc.difference)}</button>;
+          })()}
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <button type="button" style={btn2} onClick={() => open({ kind: "opening", acc: a })}>{a.approved ? "تعديل الافتتاحي" : "اعتماد الافتتاحي"}</button>
             <button type="button" disabled={!a.approved} style={{ ...btn2, opacity: a.approved ? 1 : 0.4 }} onClick={() => open({ kind: "count", acc: a })}>جرد</button>
