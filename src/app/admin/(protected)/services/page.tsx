@@ -153,7 +153,8 @@ export default function ServicesAdminPage() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "تحققي من صحة البيانات المدخلة");
+      const em = data?.error;
+      setError(typeof em === "string" ? em : "تحققي من صحة البيانات المدخلة (الاسم، السعر، المدة)");
       return;
     }
 

@@ -141,11 +141,39 @@ export async function POST(req: NextRequest) {
     }, { status: 201 });
   }
 
+  {
+    const b = body as Record<string, unknown> | null;
+    if (b && typeof b === "object" && !Array.isArray(b)) {
+      const slugify = (v: unknown) =>
+        typeof v === "string" ? v.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") : "";
+      const given = typeof b.slug === "string" ? b.slug : "";
+      if (!(given.length >= 2 && /^[a-z0-9-]+$/.test(given))) {
+        let base = slugify(given) || slugify(b.nameEn) || slugify(b.name);
+        if (base.length < 2) base = "service";
+        let slug = base;
+        let n = 0;
+        while (await prisma.service.findFirst({ where: { slug }, select: { id: true } })) {
+          n++;
+          slug = n > 50 ? base + "-" + Date.now().toString(36) : base + "-" + n;
+          if (n > 50) break;
+        }
+        b.slug = slug;
+      }
+    }
+  }
+
   const parsed = serviceSchema.safeParse(body);
 
   if (!parsed.success) {
+    const fe = parsed.error.flatten().fieldErrors as Record<string, string[] | undefined>;
+    const labels: Record<string, string> = {
+      name: "الاسم", nameEn: "الاسم بالإنجليزي", slug: "الرابط (slug)", category: "القسم",
+      price: "السعر", discountPrice: "سعر الخصم", durationMin: "المدة", bufferMin: "وقت الراحة",
+      status: "الحالة", sortOrder: "الترتيب",
+    };
+    const bad = Object.keys(fe).filter((k) => fe[k] && fe[k]!.length).map((k) => labels[k] || k);
     return NextResponse.json(
-      { error: parsed.error.flatten() },
+      { error: "تحققي من الحقول: " + (bad.join("، ") || "بيانات غير صالحة"), details: parsed.error.flatten() },
       { status: 400 }
     );
   }
