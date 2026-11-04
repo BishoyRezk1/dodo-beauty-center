@@ -28,6 +28,7 @@ const categories = [
   ["hair", "الشعر"],
   ["hair-gel", "Hair Gel"],
   ["hard-gel", "هارد جيل"],
+  ["fiberglass", "فايبر جلاس"],
   ["skin", "البشرة"],
   ["makeup", "المكياج"],
   ["nails", "الأظافر"],

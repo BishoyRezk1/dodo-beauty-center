@@ -20,6 +20,7 @@ export default async function ServicesSection() {
     hair: "الشعر",
     "hair-gel": "Hair Gel",
     "hard-gel": "هارد جيل",
+    fiberglass: "فايبر جلاس",
     skin: "البشرة",
     makeup: "المكياج",
     nails: "الأظافر",
