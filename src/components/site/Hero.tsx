@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 const perks = [
-  { icon: "📅", title: "حجز أونلاين", text: "احجزي موعدك في دقيقة" },
-  { icon: "💬", title: "تواصل سريع", text: "ردّ مباشر على واتساب" },
-  { icon: "🎁", title: "عروض دائمة", text: "خصومات وكوبونات" }
-];
+  { icon: "📅", title: "حجز أونلاين", text: "احجزي موعدك في دقيقة", to: "booking" },
+  { icon: "💬", title: "تواصل سريع", text: "ردّ مباشر على واتساب", to: "whatsapp" },
+  { icon: "🎁", title: "عروض دائمة", text: "خصومات وكوبونات", to: "offers" }
+] as const;
 
 export default function Hero({ siteName, tagline, whatsappHref }: { siteName: string; tagline: string; whatsappHref: string }) {
   return (
@@ -49,13 +49,28 @@ export default function Hero({ siteName, tagline, whatsappHref }: { siteName: st
         </a>
 
         <div className="mt-4 grid w-full max-w-3xl grid-cols-3 gap-2.5 md:mt-8 md:gap-5">
-          {perks.map((p) => (
-            <div key={p.title} className="zn-glass flex flex-col items-center gap-1 px-2 py-3.5 md:gap-2 md:px-5 md:py-6">
-              <span className="text-2xl md:text-3xl">{p.icon}</span>
-              <span className="text-[13px] font-extrabold text-charcoal md:text-base">{p.title}</span>
-              <span className="hidden text-xs text-charcoal/70 sm:block md:text-sm">{p.text}</span>
-            </div>
-          ))}
+          {perks.map((p) => {
+            const cls = "zn-glass flex flex-col items-center gap-1 px-2 py-3.5 transition active:scale-95 md:gap-2 md:px-5 md:py-6";
+            const body = (
+              <>
+                <span className="text-2xl md:text-3xl">{p.icon}</span>
+                <span className="text-[13px] font-extrabold text-charcoal md:text-base">{p.title}</span>
+                <span className="hidden text-xs text-charcoal/70 sm:block md:text-sm">{p.text}</span>
+              </>
+            );
+            if (p.to === "whatsapp") {
+              return (
+                <a key={p.title} href={whatsappHref} target="_blank" rel="noreferrer" className={cls}>
+                  {body}
+                </a>
+              );
+            }
+            return (
+              <Link key={p.title} href={p.to === "booking" ? "/booking" : "/offers"} className={cls}>
+                {body}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
