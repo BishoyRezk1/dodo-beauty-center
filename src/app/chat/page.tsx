@@ -393,9 +393,9 @@ export default function ChatPage() {
                 <div className="mb-1 font-display text-lg font-extrabold text-wine">أهلًا وسهلًا بيكي في Zina Nails 💅🏻</div>
                 ابعتيلنا الخدمة واليوم المناسب ليكي وهنرد عليكي.
                 <div className="mt-2 text-xs text-charcoal/70">
-                  🕓 المواعيد من 4:00 مساءً حتى نهاية اليوم.
+                  🕓 المواعيد من 1:00 ظهرًا حتى نهاية اليوم.
                   <br />
-                  💗 المواعيد قبل 4:00 مساءً بالحجز المسبق فقط.
+                  💗 المواعيد قبل 1:00 ظهرًا بالحجز المسبق فقط.
                 </div>
               </div>
             )}
