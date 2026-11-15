@@ -506,3 +506,90 @@ model MonthlyArchive {
   locked  Boolean  @default(false)
   savedAt DateTime @default(now())
 }
+
+model ShopCategory {
+  id        String        @id @default(cuid())
+  name      String
+  slug      String        @unique
+  imageUrl  String?
+  sortOrder Int           @default(0)
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  products  ShopProduct[]
+}
+
+model ShopProduct {
+  id           String          @id @default(cuid())
+  categoryId   String?
+  category     ShopCategory?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  name         String
+  slug         String          @unique
+  sku          String?         @unique
+  description  String?
+  imageUrl     String?
+  images       String[]        @default([])
+  price        Decimal         @db.Decimal(10, 2)
+  comparePrice Decimal?        @db.Decimal(10, 2)
+  stock        Int             @default(0)
+  lowStockAt   Int             @default(3)
+  isActive     Boolean         @default(true)
+  isArchived   Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  orderItems   ShopOrderItem[]
+
+  @@index([categoryId])
+  @@index([isActive, isArchived])
+  @@index([createdAt])
+}
+
+model ShopOrder {
+  id             String          @id @default(cuid())
+  orderNo        BigInt          @unique @default(autoincrement())
+  customerId     String?
+  customerName   String
+  phone          String
+  whatsapp       String
+  governorate    String
+  city           String
+  address        String
+  notes          String?
+  paymentMethod  String
+  paymentStatus  String          @default("UNPAID")
+  status         String          @default("AWAITING_CONFIRMATION")
+  transferRef    String?
+  receiptUrl     String?
+  subtotal       Decimal         @db.Decimal(12, 2)
+  discountTotal  Decimal         @default(0) @db.Decimal(12, 2)
+  deliveryFee    Decimal         @default(0) @db.Decimal(12, 2)
+  total          Decimal         @db.Decimal(12, 2)
+  adminNotes     String?
+  stockRestored  Boolean         @default(false)
+  idempotencyKey String?         @unique
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  items          ShopOrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([phone])
+}
+
+model ShopOrderItem {
+  id           String       @id @default(cuid())
+  orderId      String
+  order        ShopOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String?
+  product      ShopProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  name         String
+  sku          String?
+  imageUrl     String?
+  unitPrice    Decimal      @db.Decimal(10, 2)
+  comparePrice Decimal?     @db.Decimal(10, 2)
+  quantity     Int
+  lineTotal    Decimal      @db.Decimal(12, 2)
+
+  @@index([orderId])
+  @@index([productId])
+}
