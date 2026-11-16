@@ -132,10 +132,10 @@ export default function CartPage() {
               )}
               <div className="flex justify-between text-sm">
                 <span>التوصيل</span>
-                <span className="font-bold">{t.delivery === null ? "—" : t.delivery === 0 ? "مجاني" : money(t.delivery)}</span>
+                <span className="font-bold">يُحدد عبر التواصل</span>
               </div>
               <div className="flex justify-between border-t border-rosegold/25 pt-2 text-lg">
-                <span className="font-bold">الإجمالي</span>
+                <span className="font-bold">الإجمالي (بدون التوصيل)</span>
                 <span className="font-bold text-wine">{money(t.total)}</span>
               </div>
               {settings && settings.freeDeliveryOver > 0 && t.delivery !== 0 && (

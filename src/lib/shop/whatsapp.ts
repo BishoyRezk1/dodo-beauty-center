@@ -21,7 +21,7 @@ export function buildOrderMessage(o: ShopOrder, items: ShopOrderItem[]): string 
     ...lines,
     "",
     `إجمالي المنتجات: ${money(Number(o.subtotal))}`,
-    `التوصيل: ${delivery === 0 ? "مجاني" : money(delivery)}`,
+    `التوصيل: ${delivery === 0 ? "يُحدد عبر التواصل" : money(delivery)}`,
     `طريقة الدفع: ${PAYMENT_METHOD_LABEL[o.paymentMethod] || o.paymentMethod}`,
     ...(o.transferRef ? [`رقم عملية التحويل: ${o.transferRef}`] : []),
     ...(o.notes ? [`ملاحظات: ${o.notes}`] : []),

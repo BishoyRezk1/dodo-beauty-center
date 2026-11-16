@@ -92,10 +92,10 @@ export default async function OrderPage({ params }: { params: { id: string } }) 
           </div>
           <div className="flex justify-between text-sm">
             <span>التوصيل</span>
-            <span className="font-bold">{delivery === 0 ? "مجاني" : money(delivery)}</span>
+            <span className="font-bold">{delivery === 0 ? "يُحدد عبر التواصل" : money(delivery)}</span>
           </div>
           <div className="flex justify-between text-lg">
-            <span className="font-bold">الإجمالي</span>
+            <span className="font-bold">الإجمالي (بدون التوصيل)</span>
             <span className="font-bold text-wine">{money(Number(order.total))}</span>
           </div>
         </div>

@@ -288,10 +288,10 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between text-sm">
               <span>التوصيل</span>
-              <span className="font-bold">{t.delivery === null ? "—" : t.delivery === 0 ? "مجاني" : money(t.delivery)}</span>
+              <span className="font-bold">يُحدد عبر التواصل</span>
             </div>
             <div className="flex justify-between text-lg">
-              <span className="font-bold">الإجمالي</span>
+              <span className="font-bold">الإجمالي (بدون التوصيل)</span>
               <span className="font-bold text-wine">{money(t.total)}</span>
             </div>
             {belowMin && settings && <p className="text-sm font-bold text-wine">الحد الأدنى للطلب {money(settings.minOrder)}</p>}

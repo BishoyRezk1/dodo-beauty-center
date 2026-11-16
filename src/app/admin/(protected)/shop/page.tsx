@@ -176,7 +176,7 @@ export default function ShopOrdersPage() {
                     ))}
                     <div className="mt-1 flex justify-between border-t border-rosegold/20 pt-1">
                       <span>التوصيل</span>
-                      <span>{o.deliveryFee === 0 ? "مجاني" : money(o.deliveryFee)}</span>
+                      <span>{o.deliveryFee === 0 ? "عبر التواصل" : money(o.deliveryFee)}</span>
                     </div>
                     {o.discountTotal > 0 && (
                       <div className="flex justify-between text-wine">

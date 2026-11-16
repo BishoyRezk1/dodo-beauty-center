@@ -25,8 +25,8 @@ export async function getShopSettings() {
     vodafoneNumber: s[SHOP_KEYS.VODAFONE] || main[SETTING_KEYS.VODAFONE_NUMBER] || "",
     paymentInstructions:
       s[SHOP_KEYS.PAY_INSTRUCTIONS] || "حوّلي المبلغ على رقم فودافون كاش وأدخلي رقم العملية أو ارفعي صورة الإيصال.",
-    deliveryFee: Number(s[SHOP_KEYS.DELIVERY_FEE] ?? 50) || 0,
-    freeDeliveryOver: Number(s[SHOP_KEYS.FREE_DELIVERY_OVER] ?? 0) || 0,
+    deliveryFee: 0, // delivery frozen: arranged via contact
+    freeDeliveryOver: 0,
     minOrder: Number(s[SHOP_KEYS.MIN_ORDER] ?? 0) || 0,
     deliveryPolicy: s[SHOP_KEYS.DELIVERY_POLICY] || ""
   };

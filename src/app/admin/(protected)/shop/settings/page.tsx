@@ -87,21 +87,13 @@ export default function ShopSettingsPage() {
           <span className="mb-1 block text-sm font-bold">تعليمات التحويل</span>
           <textarea className="input-field" rows={3} value={s.paymentInstructions} onChange={(e) => set("paymentInstructions", e.target.value)} />
         </label>
-        <div className="grid grid-cols-3 gap-3">
-          <label>
-            <span className="mb-1 block text-xs font-bold">مصاريف الشحن</span>
-            <input className="input-field" type="number" min={0} value={s.deliveryFee} onChange={(e) => set("deliveryFee", e.target.value)} />
-          </label>
-          <label>
-            <span className="mb-1 block text-xs font-bold">شحن مجاني من</span>
-            <input className="input-field" type="number" min={0} value={s.freeDeliveryOver} onChange={(e) => set("freeDeliveryOver", e.target.value)} />
-          </label>
+        <div className="grid grid-cols-1 gap-3">
           <label>
             <span className="mb-1 block text-xs font-bold">الحد الأدنى للطلب</span>
             <input className="input-field" type="number" min={0} value={s.minOrder} onChange={(e) => set("minOrder", e.target.value)} />
           </label>
         </div>
-        <p className="-mt-2 text-xs text-charcoal/50">اكتبي 0 في "شحن مجاني من" أو "الحد الأدنى" لإلغائهم.</p>
+        <p className="-mt-2 text-xs text-charcoal/50">اكتبي 0 في "الحد الأدنى" لإلغائه.</p>
         <label>
           <span className="mb-1 block text-sm font-bold">سياسة التوصيل (تظهر في السلة)</span>
           <textarea className="input-field" rows={3} value={s.deliveryPolicy} onChange={(e) => set("deliveryPolicy", e.target.value)} />
