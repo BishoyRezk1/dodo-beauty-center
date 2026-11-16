@@ -13,7 +13,9 @@ export async function GET() {
         deliveryFee: s.deliveryFee,
         freeDeliveryOver: s.freeDeliveryOver,
         minOrder: s.minOrder,
-        deliveryPolicy: s.deliveryPolicy
+        deliveryPolicy: s.deliveryPolicy,
+        vodafoneNumber: s.vodafoneNumber,
+        paymentInstructions: s.paymentInstructions
       },
       { headers: { "Cache-Control": "no-store" } }
     );
