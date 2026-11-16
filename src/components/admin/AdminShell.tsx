@@ -23,6 +23,7 @@ const navItems = [
   { href: "/admin/visits", label: "الزوار", icon: "🌐" },
   { href: "/admin/finance", label: "الإيرادات والمصروفات", icon: "💰" },
   { href: "/admin/invoices", label: "المبيعات والفواتير", icon: "🧾" },
+  { href: "/admin/shop", label: "متجر المنتجات", icon: "🛍️" },
   { href: "/admin/loyalty", label: "نقاط الولاء", icon: "🏆" },
   { href: "/admin/maintenance", label: "إيقاف / تشغيل الموقع", icon: "🛠️" },
   { href: "/admin/settings", label: "الإعدادات", icon: "⚙️" }

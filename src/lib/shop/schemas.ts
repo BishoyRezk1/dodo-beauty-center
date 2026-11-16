@@ -26,6 +26,7 @@ const productBase = z.object({
   stock: z.coerce.number().int().min(0).max(100000).optional(),
   lowStockAt: z.coerce.number().int().min(0).max(1000).optional(),
   categoryId: z.string().nullable().optional(),
+  isArchived: z.boolean().optional(),
   isActive: z.boolean().optional()
 });
 
