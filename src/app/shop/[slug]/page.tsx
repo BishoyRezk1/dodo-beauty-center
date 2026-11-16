@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import ShopHeader from "@/components/shop/ShopHeader";
-import ProductCard from "@/components/shop/ProductCard";
 import ProductGallery from "@/components/shop/ProductGallery";
 import ProductBuy from "@/components/shop/ProductBuy";
+import ProductRow from "@/components/shop/ProductRow";
+import StickyBuyBar from "@/components/shop/StickyBuyBar";
 import { getShopProduct, safe } from "@/lib/shop/queries";
 import { getShopSettings } from "@/lib/shop/settings";
 import { money } from "@/lib/shop/format";
@@ -39,47 +41,82 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   const p = data.product;
   const images = Array.from(new Set([p.imageUrl, ...p.images].filter((x): x is string => !!x)));
+  const hasOld = !!p.comparePrice && p.comparePrice > p.price;
+  const savings = hasOld ? (p.comparePrice as number) - p.price : 0;
 
   return (
-    <div dir="rtl" className="min-h-screen pb-24">
+    <div dir="rtl" className="min-h-screen pb-44 md:pb-24">
       <ShopHeader backHref="/shop" />
-      <main className="mx-auto max-w-5xl px-4 py-4">
+      <main className="mx-auto max-w-6xl px-4 py-4">
+        <nav className="mb-3 flex flex-wrap items-center gap-1 text-xs text-charcoal/60">
+          <Link href="/shop" className="font-bold text-wine">
+            المتجر
+          </Link>
+          {p.categoryName && p.categorySlug && (
+            <>
+              <span>/</span>
+              <Link href={`/shop?category=${encodeURIComponent(p.categorySlug)}`} className="font-bold text-wine">
+                {p.categoryName}
+              </Link>
+            </>
+          )}
+          <span>/</span>
+          <span className="line-clamp-1">{p.name}</span>
+        </nav>
+
         <div className="grid gap-6 md:grid-cols-2">
-          <ProductGallery images={images} name={p.name} />
-          <div className="space-y-3">
-            {p.categoryName && <span className="text-sm font-semibold text-rosegold">{p.categoryName}</span>}
-            <h1 className="text-2xl font-bold text-charcoal" style={{ fontFamily: "var(--font-display)" }}>
-              {p.name}
-            </h1>
-            <div className="flex items-baseline gap-3">
-              <span className="text-2xl font-bold text-wine">{money(p.price)}</span>
-              {p.comparePrice && p.comparePrice > p.price && (
-                <>
-                  <span className="text-charcoal/50 line-through">{money(p.comparePrice)}</span>
-                  <span className="rounded-full bg-wine px-2 py-0.5 text-xs font-bold text-cream">وفّري {p.discountPercent}%</span>
-                </>
-              )}
+          <div className="md:sticky md:top-20 md:self-start">
+            <ProductGallery images={images} name={p.name} />
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-xl font-bold leading-8 text-charcoal md:text-2xl" style={{ fontFamily: "var(--font-display)" }}>
+                {p.name}
+              </h1>
+              {p.sku && <p className="mt-1 text-xs text-charcoal/50">كود المنتج: {p.sku}</p>}
             </div>
-            <p className={`text-sm font-semibold ${p.inStock ? "text-charcoal/70" : "text-wine"}`}>
-              {!p.inStock ? "نفدت الكمية" : p.lowStock ? "آخر قطع متاحة" : "متوفر"}
-              {p.sku ? ` · كود: ${p.sku}` : ""}
+
+            <div className="rounded-2xl bg-cream p-4">
+              <div className="flex flex-wrap items-baseline gap-3">
+                <span className="text-3xl font-extrabold text-wine">{money(p.price)}</span>
+                {hasOld && (
+                  <>
+                    <span className="text-charcoal/50 line-through">{money(p.comparePrice as number)}</span>
+                    <span className="rounded-md bg-wine px-2 py-0.5 text-xs font-bold text-cream">-{p.discountPercent}%</span>
+                  </>
+                )}
+              </div>
+              {hasOld && <p className="mt-1 text-sm font-bold text-emerald-600">وفّري {money(savings)}</p>}
+            </div>
+
+            <p className="flex items-center gap-2 text-sm font-bold">
+              <span className={`h-2.5 w-2.5 rounded-full ${!p.inStock ? "bg-red-500" : p.lowStock ? "bg-amber-500" : "bg-emerald-500"}`} />
+              {!p.inStock ? "نفدت الكمية" : p.lowStock ? `باقي ${p.stock} قطع فقط` : "متوفر"}
             </p>
-            {p.description && <p className="whitespace-pre-line leading-8 text-charcoal/80">{p.description}</p>}
+
             <ProductBuy product={p} open={open} />
+
+            <ul className="space-y-2 rounded-2xl border border-rosegold/20 bg-white p-4 text-sm text-charcoal/80">
+              <li>💵 الدفع عند الاستلام أو فودافون كاش</li>
+              <li>🚚 التوصيل يُحدد عبر التواصل بعد تأكيد الطلب</li>
+              <li>💬 تأكيد الطلب عبر واتساب</li>
+            </ul>
           </div>
         </div>
 
-        {data.related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="mb-3 text-lg font-bold text-wine">منتجات مشابهة</h2>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {data.related.map((r) => (
-                <ProductCard key={r.id} product={r} open={open} />
-              ))}
-            </div>
+        {p.description && (
+          <section className="mt-8 rounded-2xl border border-rosegold/20 bg-white p-5">
+            <h2 className="mb-2 text-lg font-bold text-wine">وصف المنتج</h2>
+            <p className="whitespace-pre-line leading-8 text-charcoal/80">{p.description}</p>
           </section>
         )}
+
+        <div className="mt-8">
+          <ProductRow title="منتجات مشابهة" items={data.related} open={open} />
+        </div>
       </main>
+      <StickyBuyBar product={p} open={open} />
     </div>
   );
 }

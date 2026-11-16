@@ -31,13 +31,22 @@ export async function listShopCategories() {
     where: { isActive: true },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }]
   });
-  return rows.map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
+  return rows.map((c) => ({ id: c.id, name: c.name, slug: c.slug, imageUrl: c.imageUrl }));
 }
 
-export type ListOpts = { q?: string; category?: string; sort?: string; filter?: string; page?: number };
+export type ListOpts = {
+  q?: string;
+  category?: string;
+  sort?: string;
+  filter?: string;
+  page?: number;
+  min?: number;
+  max?: number;
+  take?: number;
+};
 
 export async function listShopProducts(o: ListOpts) {
-  const take = 24;
+  const take = Math.min(48, Math.max(1, o.take || 24));
   const page = Math.max(1, o.page || 1);
   const and: Prisma.ShopProductWhereInput[] = [{ isActive: true, isArchived: false }];
   if (o.category) {
@@ -52,6 +61,10 @@ export async function listShopProducts(o: ListOpts) {
   if (o.filter === "sale") and.push({ comparePrice: { not: null } });
   if (o.filter === "new") and.push({ createdAt: { gte: new Date(Date.now() - 30 * 86400000) } });
   if (o.filter === "instock") and.push({ stock: { gt: 0 } });
+  const priceCond: Prisma.DecimalFilter = {};
+  if (o.min && o.min > 0) priceCond.gte = o.min;
+  if (o.max && o.max > 0) priceCond.lte = o.max;
+  if (Object.keys(priceCond).length > 0) and.push({ price: priceCond });
   const where: Prisma.ShopProductWhereInput = { AND: and };
   const orderBy: Prisma.ShopProductOrderByWithRelationInput =
     o.sort === "price_asc" ? { price: "asc" } : o.sort === "price_desc" ? { price: "desc" } : { createdAt: "desc" };
@@ -76,12 +89,19 @@ export async function getShopProduct(slug: string) {
       ...(p.categoryId ? { categoryId: p.categoryId } : {})
     },
     orderBy: { createdAt: "desc" },
-    take: 4,
+    take: 10,
     include: { category: true }
   });
   const dto = productDto(p);
   return {
-    product: { ...toView(dto), description: p.description, images: p.images, sku: p.sku, categoryName: p.category?.name ?? null },
+    product: {
+      ...toView(dto),
+      description: p.description,
+      images: p.images,
+      sku: p.sku,
+      categoryName: p.category?.name ?? null,
+      categorySlug: p.category?.slug ?? null
+    },
     related: related.map((r) => toView(productDto(r)))
   };
 }
