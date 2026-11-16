@@ -14,6 +14,7 @@ type Item = {
 
 const ICONS: Record<string, string[]> = {
   user: ["M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2", "M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"],
+  shop: ["M6 7h12l-1 13H7z", "M9 7a3 3 0 0 1 6 0"],
   home: ["M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"],
   services: ["M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z", "M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"],
   book: ["M12 5v14", "M5 12h14"],
@@ -49,6 +50,7 @@ export default function BottomNav({ whatsappHref }: { whatsappHref: string }) {
     { key: "home", label: "الرئيسية", href: "/", paths: ["/"] },
     { key: "services", label: "الخدمات", href: "/#services", paths: [] },
     { key: "book", label: "احجزي الآن", href: "/booking", paths: ["/booking"], primary: true },
+    { key: "shop", label: "المتجر", href: "/shop", paths: ["/shop", "/cart", "/checkout"] },
     { key: "chat", label: "Zina Chat", href: "/chat", paths: ["/chat"] },
     { key: "user", label: "حسابي", href: "/account", paths: ["/account"] }
   ];
@@ -69,7 +71,7 @@ export default function BottomNav({ whatsappHref }: { whatsappHref: string }) {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-rosegold/25 bg-cream/95 backdrop-blur-md md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
-        <ul className="mx-auto grid h-16 max-w-lg grid-cols-5 items-end">
+        <ul className="mx-auto grid h-16 max-w-lg grid-cols-6 items-end">
           {items.map((it) => {
             const active = isActive(it);
             const content = it.primary ? (
