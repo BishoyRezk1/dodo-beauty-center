@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { audit, requireOwner } from "@/lib/ledger";
 import { accountId, fail, money, toCents } from "@/lib/invoices";
 import { payoutSchema, staffDueCents } from "@/lib/staff";
+import { monthLocked } from "@/lib/archive";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
 
   const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(new Date());
+  if (await monthLocked(ymd.slice(0, 7))) return NextResponse.json({ error: "الشهر مقفول. افتحيه من الأرشيف الشهري أولاً" }, { status: 423 });
 
   try {
     const out = await prisma.$transaction(async (tx) => {
