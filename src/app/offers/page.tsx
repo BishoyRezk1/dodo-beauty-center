@@ -1,9 +1,11 @@
 import { getSettings, SETTING_KEYS } from "@/lib/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { prisma } from "@/lib/prisma";
+import { getWeeklyOffers } from "@/lib/weekly-cards";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import OffersBanner from "@/components/site/OffersBanner";
+import WeeklyOffers from "@/components/site/WeeklyOffers";
 import WhatsAppFloatButton from "@/components/site/WhatsAppFloatButton";
 import FacebookFloatButton from "@/components/site/FacebookFloatButton";
 import TikTokFloatButton from "@/components/site/TikTokFloatButton";
@@ -18,8 +20,14 @@ export default async function OffersPage() {
   );
 
   const now = new Date();
+  const weekly = await getWeeklyOffers();
   const offers = await prisma.offer.findMany({
-    where: { isActive: true, startDate: { lte: now }, endDate: { gte: now } },
+    where: {
+      isActive: true,
+      startDate: { lte: now },
+      endDate: { gte: now },
+      OR: [{ serviceId: null }, { service: { category: { not: "weekly-offer" } } }]
+    },
     orderBy: { createdAt: "desc" }
   });
 
@@ -38,19 +46,30 @@ export default async function OffersPage() {
     <>
       <Header siteName={settings[SETTING_KEYS.SITE_NAME]} />
       <main>
-        <section className="section-container py-16 md:py-24">
-          <div className="mb-10 text-center">
-            <span className="text-xs font-bold tracking-widest text-rosegold">عروض خاصة</span>
-            <h2 className="mt-2 font-display text-3xl font-extrabold text-charcoal md:text-4xl">
-              عروض لفترة محدودة
-            </h2>
-          </div>
-          {serialized.length > 0 ? (
+        <WeeklyOffers offers={weekly} />
+        {serialized.length > 0 ? (
+          <section className="section-container py-16 md:py-24">
+            <div className="mb-10 text-center">
+              <span className="text-xs font-bold tracking-widest text-rosegold">عروض خاصة</span>
+              <h2 className="mt-2 font-display text-3xl font-extrabold text-charcoal md:text-4xl">
+                عروض لفترة محدودة
+              </h2>
+            </div>
             <OffersBanner offers={serialized} />
-          ) : (
-            <p className="text-center text-charcoal/50">لا توجد عروض متاحة حاليًا</p>
-          )}
-        </section>
+          </section>
+        ) : (
+          weekly.length === 0 && (
+            <section className="section-container py-16 md:py-24">
+              <div className="mb-10 text-center">
+                <span className="text-xs font-bold tracking-widest text-rosegold">عروض خاصة</span>
+                <h2 className="mt-2 font-display text-3xl font-extrabold text-charcoal md:text-4xl">
+                  عروض لفترة محدودة
+                </h2>
+              </div>
+              <p className="text-center text-charcoal/50">لا توجد عروض متاحة حاليًا</p>
+            </section>
+          )
+        )}
       </main>
       <Footer
         siteName={settings[SETTING_KEYS.SITE_NAME]}

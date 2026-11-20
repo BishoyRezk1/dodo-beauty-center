@@ -21,6 +21,7 @@ export const config = {
     "/admin/customers/:path*",
     "/admin/services/:path*",
     "/admin/offers/:path*",
+    "/admin/weekly-offer/:path*",
     "/admin/coupons/:path*",
     "/admin/gallery/:path*",
     "/admin/reviews/:path*",
