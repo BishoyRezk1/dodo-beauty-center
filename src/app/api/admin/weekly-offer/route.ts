@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 
@@ -31,7 +32,7 @@ export async function PATCH(req: NextRequest) {
   if (unauthorized) return unauthorized;
 
   const body = await req.json();
-  const data: Record<string, unknown> = {};
+  const data: Prisma.OfferUpdateManyMutationInput = {};
   let start: Date | null = null;
   let end: Date | null = null;
 
