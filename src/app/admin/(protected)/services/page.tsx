@@ -35,6 +35,7 @@ const categories = [
   ["hair-removal", "إزالة الشعر"],
   ["body-care", "العناية"],
   ["bridal", "العروس"],
+  ["weekly-offer", "عرض الأسبوع"],
   ["general", "أخرى"]
 ];
 
@@ -197,6 +198,27 @@ export default function ServicesAdminPage() {
     await load();
   }
 
+  async function loadWeeklyOffer() {
+    if (!window.confirm("إضافة خدمات العرض الأسبوعي التسع؟ لن يتم تعديل أو حذف أي خدمة أساسية موجودة.")) return;
+    setCatalogLoading(true);
+    try {
+      const res = await fetch("/api/services", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weeklyOffer: true })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "تعذر إضافة العرض الأسبوعي");
+      alert(`تم تجهيز العرض الأسبوعي. الخدمات الجديدة: ${data.created} من 9. ينتهي يوم 27 نوفمبر 2026.`);
+      await load();
+    } catch (err_) {
+      const err = err_ as ErrLike;
+      alert(err.message || "حدث خطأ أثناء تجهيز العرض");
+    } finally {
+      setCatalogLoading(false);
+    }
+  }
+
   async function loadCatalog() {
     setCatalogLoading(true);
 
@@ -255,6 +277,13 @@ export default function ServicesAdminPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <button
+            onClick={loadWeeklyOffer}
+            disabled={catalogLoading}
+            className="btn-primary !py-2 text-sm"
+          >
+            {catalogLoading ? "جاري التجهيز..." : "＋ إضافة عرض الأسبوع (9 خدمات)"}
+          </button>
           <button
             onClick={loadCatalog}
             disabled={catalogLoading}

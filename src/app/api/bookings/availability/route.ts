@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSetting, SETTING_KEYS } from "@/lib/settings";
 import { rateLimitDb, getClientIp } from "@/lib/rate-limit";
+import { archiveExpiredWeeklyOffer } from "@/lib/weekly-offer";
+
 
 function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
@@ -20,6 +22,7 @@ function isValidTime(value: string): boolean {
 
 // GET /api/bookings/availability?serviceId=xxx&date=2026-09-15
 export async function GET(req: NextRequest) {
+  await archiveExpiredWeeklyOffer();
   const ip = getClientIp(req);
   const { allowed } = await rateLimitDb(`availability:${ip}`, 30, 5 * 60 * 1000);
   if (!allowed) {
@@ -48,7 +51,8 @@ export async function GET(req: NextRequest) {
         durationMin: true,
         bufferMin: true,
         isActive: true,
-        status: true
+        status: true,
+        category: true
       }
     });
 
@@ -56,7 +60,11 @@ export async function GET(req: NextRequest) {
       !service ||
       !service.isActive ||
       service.status !== "AVAILABLE" ||
-      Number(service.price) <= 0
+      Number(service.price) <= 0 ||
+      (service.category === "weekly-offer" && !(await prisma.offer.findFirst({
+        where: { serviceId: service.id, isActive: true, archivedAt: null, startDate: { lte: new Date() }, endDate: { gte: new Date() } },
+        select: { id: true }
+      })))
     ) {
       return NextResponse.json(
         { error: "الخدمة غير متاحة للحجز حاليًا" },

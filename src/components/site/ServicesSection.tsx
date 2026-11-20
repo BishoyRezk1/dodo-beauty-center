@@ -5,7 +5,11 @@ export default async function ServicesSection() {
   const services = (await prisma.service.findMany({
     where: {
       isActive: true,
-      status: { in: ["AVAILABLE", "COMING_SOON"] }
+      status: { in: ["AVAILABLE", "COMING_SOON"] },
+      OR: [
+        { category: { not: "weekly-offer" } },
+        { offers: { some: { isActive: true, archivedAt: null, startDate: { lte: new Date() }, endDate: { gte: new Date() } } } }
+      ]
     },
     orderBy: [
       { category: "asc" },
@@ -27,6 +31,7 @@ export default async function ServicesSection() {
     "hair-removal": "إزالة الشعر",
     "body-care": "العناية",
     bridal: "العروس",
+    "weekly-offer": "عرض الأسبوع",
     general: "خدمات أخرى"
   };
 
@@ -112,6 +117,7 @@ export default async function ServicesSection() {
                   durationMin={s.durationMin}
                   imageUrl={s.imageUrl}
                   status={s.status as "AVAILABLE" | "COMING_SOON" | "HIDDEN"}
+                  category={s.category}
                   showComingSoon={Number(s.discountPrice ?? s.price) <= 0}
                 />
               ))}

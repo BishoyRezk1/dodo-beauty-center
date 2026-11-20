@@ -13,6 +13,7 @@ interface ServiceCardProps {
   imageUrl?: string | null;
   showComingSoon?: boolean;
   status?: "AVAILABLE" | "COMING_SOON" | "HIDDEN";
+  category?: string;
 }
 
 export default function ServiceCard({
@@ -26,6 +27,7 @@ export default function ServiceCard({
   imageUrl,
   showComingSoon = false,
   status = "AVAILABLE",
+  category = "general",
 }: ServiceCardProps) {
   const hasDiscount =
     typeof discountPrice === "number" &&
@@ -67,6 +69,14 @@ export default function ServiceCard({
         {description && (
           <p className="mb-4 line-clamp-2 text-sm leading-6 text-gray-600">
             {description}
+          </p>
+        )}
+
+        {category === "weekly-offer" && (
+          <p className="mb-3 text-base font-extrabold text-pink-700">
+            {discountPrice != null && discountPrice > 0 && discountPrice < price
+              ? `من ${discountPrice} إلى ${price} جنيه`
+              : `${price} جنيه`}
           </p>
         )}
 

@@ -13,6 +13,7 @@ import { sendPushToAdmins } from "@/lib/push";
 import { formatArabicDate } from "@/lib/utils";
 import { z } from "zod";
 import { rateLimitDb, getClientIp } from "@/lib/rate-limit";
+import { archiveExpiredWeeklyOffer } from "@/lib/weekly-offer";
 
 function toMinutes(value: string): number {
   const [hours, minutes] = value.split(":").map(Number);
@@ -90,6 +91,7 @@ const bookingSchema = z.object({
 
 // POST /api/bookings — public: submit a new booking request
 export async function POST(req: NextRequest) {
+  await archiveExpiredWeeklyOffer();
   if (await isMaintenanceOn()) {
     return NextResponse.json(
       { error: "الحجز متوقف مؤقتًا بسبب التحديثات، هنرجعلك قريب 💗" },
@@ -173,7 +175,11 @@ export async function POST(req: NextRequest) {
       !service ||
       !service.isActive ||
       service.status !== "AVAILABLE" ||
-      Number(service.price) <= 0
+      Number(service.price) <= 0 ||
+      (service.category === "weekly-offer" && !(await prisma.offer.findFirst({
+        where: { serviceId: service.id, isActive: true, archivedAt: null, startDate: { lte: new Date() }, endDate: { gte: new Date() } },
+        select: { id: true }
+      })))
     ) {
       return NextResponse.json(
         {

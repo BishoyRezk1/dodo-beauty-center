@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { z } from "zod";
+import { archiveExpiredWeeklyOffer } from "@/lib/weekly-offer";
 
 const serviceSchema = z.object({
   name: z.string().min(2),
@@ -76,14 +77,20 @@ const catalog = [
 ];
 
 export async function GET(req: NextRequest) {
+  await archiveExpiredWeeklyOffer();
   const includeInactive = req.nextUrl.searchParams.get("all") === "1";
 
+  const now = new Date();
   const services = await prisma.service.findMany({
     where: includeInactive
       ? {}
       : {
           isActive: true,
-          status: "AVAILABLE"
+          status: "AVAILABLE",
+          OR: [
+            { category: { not: "weekly-offer" } },
+            { offers: { some: { isActive: true, archivedAt: null, startDate: { lte: now }, endDate: { gte: now } } } }
+          ]
         },
     orderBy: [{ category: "asc" }, { sortOrder: "asc" }, { name: "asc" }]
   });
@@ -96,6 +103,63 @@ export async function POST(req: NextRequest) {
   if (unauthorized) return unauthorized;
 
   const body = await req.json();
+
+  if (body?.weeklyOffer === true) {
+    const weeklyServices = [
+      { name: "مكواة", nameEn: "Flat Iron", slug: "weekly-flat-iron-2026", description: "عرض خاص لمدة أسبوع — السعر من 70 إلى 100 جنيه حسب طول الشعر.", price: 100, discountPrice: 70 },
+      { name: "قص أطراف وغسيل", nameEn: "Trim & Wash", slug: "weekly-trim-wash-2026", description: "قص أطراف وغسيل الشعر.", price: 50 },
+      { name: "تنظيف بشرة", nameEn: "Facial Cleaning", slug: "weekly-facial-cleaning-2026", description: "تنظيف بشرة.", price: 50 },
+      { name: "تنظيف بشرة عميق", nameEn: "Deep Facial Cleaning", slug: "weekly-deep-facial-2026", description: "تنظيف بشرة عميق.", price: 100 },
+      { name: "طبقة هارد جيل خفيفة لتقوية شكل الأظافر", nameEn: "Light Hard Gel", slug: "weekly-light-hard-gel-2026", description: "طبقة هارد جيل خفيفة لتقوية شكل الأظافر.", price: 100 },
+      { name: "وش وحواجب ودارما + ماسك", nameEn: "Face, Brows, Dermaplaning & Mask", slug: "weekly-face-brows-derma-mask-2026", description: "وش وحواجب ودارما مع ماسك.", price: 80 },
+      { name: "باديكير رجل", nameEn: "Foot Pedicure", slug: "weekly-foot-pedicure-2026", description: "باديكير رجل.", price: 100 },
+      { name: "فيك نيلز لون واحد", nameEn: "Fake Nails - One Color", slug: "weekly-fake-nails-one-color-2026", description: "فيك نيلز لون واحد.", price: 100 },
+      { name: "جيل بولش لون واحد", nameEn: "Gel Polish - One Color", slug: "weekly-gel-polish-one-color-2026", description: "جيل بولش لون واحد.", price: 100 }
+    ];
+    const startsAt = new Date();
+    // 23:59:59.999 in Cairo (UTC+2) on 27 November 2026.
+    const endsAt = new Date("2026-11-27T21:59:59.999Z");
+    let created = 0;
+    for (let index = 0; index < weeklyServices.length; index++) {
+      const item = weeklyServices[index];
+      let service = await prisma.service.findUnique({ where: { slug: item.slug } });
+      if (!service) {
+        service = await prisma.service.create({
+          data: {
+            ...item,
+            category: "weekly-offer",
+            durationMin: 60,
+            bufferMin: 0,
+            status: "AVAILABLE",
+            isActive: true,
+            sortOrder: index
+          }
+        });
+        created++;
+      } else if (service.category !== "weekly-offer") {
+        // Never take over or modify an existing core service with a colliding slug.
+        continue;
+      }
+      const linkedOffer = await prisma.offer.findFirst({
+        where: { serviceId: service.id, title: item.name }
+      });
+      if (!linkedOffer) {
+        await prisma.offer.create({
+          data: {
+            title: item.name,
+            details: item.description,
+            oldPrice: item.price,
+            newPrice: item.discountPrice ?? item.price,
+            startDate: startsAt,
+            endDate: endsAt,
+            isActive: true,
+            serviceId: service.id
+          }
+        });
+      }
+    }
+    return NextResponse.json({ created, total: weeklyServices.length, endsAt: endsAt.toISOString() }, { status: 201 });
+  }
 
   if (body?.catalog === true) {
     const existing = await prisma.service.findMany({

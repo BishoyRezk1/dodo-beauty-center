@@ -7,8 +7,12 @@ export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const tab = new URL(req.url).searchParams.get("tab") || "active";
-  await prisma.offer.updateMany({ where: { archivedAt: null, endDate: { lt: new Date() } }, data: { archivedAt: new Date(), isActive: false } });
   const now = new Date();
+  await prisma.offer.updateMany({ where: { archivedAt: null, endDate: { lt: now } }, data: { archivedAt: now, isActive: false } });
+  await prisma.service.updateMany({
+    where: { category: "weekly-offer", isActive: true, offers: { some: { endDate: { lt: now } } } },
+    data: { isActive: false, status: "HIDDEN" }
+  });
   const where =
     tab === "archived" ? { archivedAt: { not: null } }
     : tab === "ended" ? { archivedAt: null, endDate: { lt: now } }
