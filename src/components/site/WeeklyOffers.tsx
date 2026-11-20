@@ -1,4 +1,5 @@
 import Link from "next/link";
+import WeeklyCardImage from "./WeeklyCardImage";
 import type { WeeklyOffer } from "@/lib/weekly-cards";
 
 const num = (v: string | number) => Number(v).toLocaleString("ar-EG");
@@ -52,14 +53,7 @@ export default function WeeklyOffers({ offers }: { offers: WeeklyOffer[] }) {
                 className="group flex flex-col overflow-hidden rounded-xl2 border border-rosegold/20 bg-white shadow-soft transition hover:-translate-y-1"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-blush to-rosegold/40">
-                  {o.imageUrl && (
-                    <img
-                      src={o.imageUrl}
-                      alt={o.title}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  )}
+                  <WeeklyCardImage src={o.imageUrl} alt={o.title} />
                   <span className="absolute right-3 top-3 rounded-full bg-gradient-to-l from-fuchsia-600 to-wine px-3 py-1 text-[11px] font-extrabold text-white shadow-soft">
                     💖 عرض الأسبوع
                   </span>

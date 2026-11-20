@@ -2,6 +2,7 @@ import { getSettings, SETTING_KEYS } from "@/lib/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import Header from "@/components/site/Header";
 import Hero from "@/components/site/Hero";
+import WeeklyOffersTop from "@/components/site/WeeklyOffersTop";
 import ServicesSection from "@/components/site/ServicesSection";
 import OpeningOffer from "@/components/site/OpeningOffer";
 import GallerySection from "@/components/site/GallerySection";
@@ -29,6 +30,7 @@ export default async function HomePage() {
     <>
       <Header siteName={settings[SETTING_KEYS.SITE_NAME]} />
       <main>
+        <WeeklyOffersTop />
         <Hero
           siteName={settings[SETTING_KEYS.SITE_NAME]}
           tagline={settings[SETTING_KEYS.SITE_TAGLINE]}
