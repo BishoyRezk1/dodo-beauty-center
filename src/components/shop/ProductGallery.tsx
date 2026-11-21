@@ -1,4 +1,5 @@
 "use client";
+import SafeImage from "@/components/SafeImage";
 
 import { useState } from "react";
 
@@ -13,7 +14,7 @@ export default function ProductGallery({ images, name }: { images: string[]; nam
   return (
     <div>
       <div className="relative aspect-square overflow-hidden rounded-2xl border border-rosegold/20 bg-white">
-        <img src={images[idx]} alt={name} className="h-full w-full object-contain p-2" />
+        <SafeImage src={images[idx]} alt={name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain p-2" priority />
         {images.length > 1 && (
           <>
             <button type="button" aria-label="السابق" onClick={() => go(-1)} className={`${arrow} right-2`}>

@@ -1,4 +1,5 @@
 "use client";
+import SafeImage from "@/components/SafeImage";
 
 import Link from "next/link";
 
@@ -37,10 +38,13 @@ export default function ServiceCard({
   const card = (
     <div className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       {imageUrl ? (
-        <img
+        <SafeImage
           src={imageUrl}
           alt={name}
-          loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover"
+          width={640}
+          height={480}
+          sizes="(max-width: 768px) 50vw, 33vw"
+          className="aspect-[4/3] w-full object-cover"
         />
       ) : (
         <div className="flex aspect-[4/3] items-center justify-center bg-gray-100 text-4xl">

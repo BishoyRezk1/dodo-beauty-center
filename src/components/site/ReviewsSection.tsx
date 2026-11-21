@@ -1,3 +1,4 @@
+import SafeImage from "@/components/SafeImage";
 import { prisma } from "@/lib/prisma";
 
 const fallbackReviews = [
@@ -25,7 +26,7 @@ export default async function ReviewsSection() {
         {display.map((r, i) => (
           <div key={i} className={`card overflow-hidden p-6 ${r.isFeatured ? "ring-2 ring-rosegold" : ""}`}>
             {r.imageUrl && (
-              <img src={r.imageUrl} alt="صورة من تجربة العميلة" loading="lazy" className="mb-4 h-44 w-full rounded-xl object-cover" />
+              <SafeImage src={r.imageUrl} alt="صورة من تجربة العميلة" width={600} height={352} sizes="(max-width: 768px) 100vw, 33vw" className="mb-4 h-44 w-full rounded-xl object-cover" />
             )}
             <div className="mb-3 flex items-center justify-between">
               <span className="text-rosegold">
