@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/admin-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ const countryName = (c?: string | null) => {
 };
 
 export default async function VisitorsPage() {
+  await requireAdmin();
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Cairo" });
   const since = new Date(Date.now() - 30 * 864e5);
 
