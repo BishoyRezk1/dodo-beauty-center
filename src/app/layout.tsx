@@ -39,9 +39,28 @@ export const viewport: Viewport = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://dodo-beauty-center.vercel.app";
+  const siteTitle = settings.site_name || "Zina Nails";
+  const siteDesc = settings.site_tagline || "احجزي موعدك أونلاين في Zina Nails";
   return {
-    title: settings.site_name || "Zina Nails",
-    description: settings.site_tagline || "احجزي موعدك أونلاين في Zina Nails",
+    metadataBase: new URL(siteUrl),
+    title: siteTitle,
+    description: siteDesc,
+    openGraph: {
+      title: siteTitle,
+      description: siteDesc,
+      url: siteUrl,
+      siteName: siteTitle,
+      locale: "ar_EG",
+      type: "website",
+      images: [{ url: "/images/hero-bg.jpg", alt: siteTitle }]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: siteTitle,
+      description: siteDesc,
+      images: ["/images/hero-bg.jpg"]
+    },
     manifest: "/app.webmanifest",
     icons: { icon: "/icons/icon-64.png", apple: "/icons/apple-180.png" },
     appleWebApp: { capable: true, title: "Zina Nails", statusBarStyle: "default" }
