@@ -22,6 +22,7 @@ const navItems = [
   { href: "/admin/reviews", label: "التقييمات", icon: "⭐" },
   { href: "/admin/reports", label: "التقارير", icon: "📈" },
   { href: "/admin/visits", label: "الزوار", icon: "🌐" },
+  { href: "/admin/facebook", label: "النشر على فيسبوك", icon: "📣" },
   { href: "/admin/finance", label: "الإيرادات والمصروفات", icon: "💰" },
   { href: "/admin/invoices", label: "المبيعات والفواتير", icon: "🧾" },
   { href: "/admin/staff", label: "الموظفات والعمولات", icon: "💅" },

@@ -1,4 +1,3 @@
-import VisitorTracker from "@/components/VisitorTracker";
 import PushPrompt from "@/components/PushPrompt";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import type { Metadata, Viewport } from "next";
@@ -77,7 +76,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="ar" dir="rtl" className={`${almarai.variable} ${elMessiri.variable}`}>
       <body className="font-body antialiased">
-        <VisitorTracker />
         <script dangerouslySetInnerHTML={{ __html: "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__zinaBip=e;});" }} />
         <div
           aria-hidden="true"
