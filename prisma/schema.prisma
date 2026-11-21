@@ -639,3 +639,18 @@ model StaffPayout {
 
   @@index([staffId])
 }
+
+model VisitorLog {
+  id        String   @id @default(uuid())
+  visitorId String
+  day       String
+  country   String?
+  region    String?
+  city      String?
+  path      String?
+  device    String?
+  createdAt DateTime @default(now())
+
+  @@unique([visitorId, day])
+  @@index([createdAt])
+}
