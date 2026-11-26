@@ -51,7 +51,6 @@ function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () =
 }
 
 function NewInvoice({ onClose, onDone, flash }: { onClose: () => void; onDone: () => void; flash: (m: string) => void }) {
-  const [svcs, setSvcs] = useState<Svc[]>([]);
   const [custs, setCusts] = useState<Cust[]>([]);
   const [customerId, setCustomerId] = useState("");
   const [rows, setRows] = useState<Row[]>([{ key: 1, serviceId: "", description: "", quantity: "1", unitPrice: "", discount: "0" }]);
@@ -63,7 +62,7 @@ function NewInvoice({ onClose, onDone, flash }: { onClose: () => void; onDone: (
 
   useEffect(() => {
     call<{ services?: Svc[]; customers?: Cust[] }>("/api/admin/invoices/lookups", "GET").then((r) => {
-      if (r.ok) { setSvcs(r.data.services ?? []); setCusts(r.data.customers ?? []); }
+      if (r.ok) { setCusts(r.data.customers ?? []); }
     });
   }, []);
 
@@ -80,6 +79,7 @@ function NewInvoice({ onClose, onDone, flash }: { onClose: () => void; onDone: (
   async function submit() {
     if (total <= 0) return flash("إجمالي الفاتورة لازم يكون أكبر من صفر");
     if (paid > total) return flash("المدفوع أكبر من الإجمالي");
+    if (rows.some((r) => !r.description.trim())) return flash("اكتب اسم المنتج في كل بند");
     const payments: { method: string; amount: number }[] = [];
     if ((parseFloat(cash) || 0) > 0) payments.push({ method: "cash", amount: parseFloat(cash) });
     if ((parseFloat(vf) || 0) > 0) payments.push({ method: "vodafone_cash", amount: parseFloat(vf) });
@@ -107,14 +107,7 @@ function NewInvoice({ onClose, onDone, flash }: { onClose: () => void; onDone: (
       </select>
       {rows.map((r, i) => (
         <div key={r.key} style={{ ...card, marginTop: 10 }}>
-          <select style={inp} value={r.serviceId} onChange={(e) => {
-            const s = svcs.find((x) => x.id === e.target.value);
-            upd(r.key, { serviceId: e.target.value, unitPrice: s ? String(s.price) : r.unitPrice });
-          }}>
-            <option value="">بند حر (اكتب الوصف)</option>
-            {svcs.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-          {!r.serviceId && <input style={{ ...inp, marginTop: 8 }} placeholder="وصف البند" value={r.description} onChange={(e) => upd(r.key, { description: e.target.value })} />}
+          <input style={inp} placeholder="اسم المنتج" value={r.description} onChange={(e) => upd(r.key, { description: e.target.value })} />
           <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
             <input style={inp} type="number" inputMode="numeric" placeholder="الكمية" value={r.quantity} onChange={(e) => upd(r.key, { quantity: e.target.value })} />
             <input style={inp} type="number" inputMode="decimal" placeholder="السعر" value={r.unitPrice} onChange={(e) => upd(r.key, { unitPrice: e.target.value })} />
@@ -126,7 +119,7 @@ function NewInvoice({ onClose, onDone, flash }: { onClose: () => void; onDone: (
           </div>
         </div>
       ))}
-      <button type="button" style={{ ...btn2, width: "100%", marginTop: 4 }} onClick={() => setRows((rs) => [...rs, { key: Math.max(...rs.map((x) => x.key)) + 1, serviceId: "", description: "", quantity: "1", unitPrice: "", discount: "0" }])}>+ إضافة بند</button>
+      <button type="button" style={{ ...btn2, width: "100%", marginTop: 4 }} onClick={() => setRows((rs) => [...rs, { key: Math.max(...rs.map((x) => x.key)) + 1, serviceId: "", description: "", quantity: "1", unitPrice: "", discount: "0" }])}>+ إضافة منتج</button>
       <div style={{ ...card, marginTop: 12 }}>
         <div style={{ fontWeight: 800, marginBottom: 8 }}>المدفوع الآن</div>
         <div style={{ display: "flex", gap: 8 }}>
@@ -250,7 +243,7 @@ export default function InvoicesPage() {
   return (
     <div dir="rtl" style={{ maxWidth: 560, margin: "0 auto", padding: "16px 16px 120px" }}>
       {toast && <div style={{ position: "fixed", top: 78, left: "50%", transform: "translateX(-50%)", zIndex: 10001, background: "#2b1a22", color: "#fff", padding: "10px 18px", borderRadius: 999, fontSize: 14, fontWeight: 700 }}>{toast}</div>}
-      <h1 style={{ fontWeight: 800, fontSize: 24, color: "#5a1535", margin: "0 0 12px" }}>المبيعات والفواتير</h1>
+      <h1 style={{ fontWeight: 800, fontSize: 24, color: "#5a1535", margin: "0 0 12px" }}>فواتير المتجر</h1>
       <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 8 }}>
         {[["", "الكل"], ["ISSUED", "مستحقة"], ["PARTIAL", "جزئي"], ["PAID", "مدفوعة"], ["CANCELLED", "ملغاة"]].map(([v, l]) => (
           <button key={v} type="button" onClick={() => setStatus(v)} style={{ ...(status === v ? btn : btn2), height: 38, whiteSpace: "nowrap", fontSize: 13 }}>{l}</button>
@@ -267,7 +260,7 @@ export default function InvoicesPage() {
           </div>
         </div>
       ))}
-      <button type="button" onClick={() => setNewOpen(true)} style={{ ...btn, position: "fixed", left: 16, bottom: "calc(20px + env(safe-area-inset-bottom,0px))", zIndex: 9000, borderRadius: 999, boxShadow: "0 12px 26px rgba(194,24,91,.4)" }}>+ فاتورة جديدة</button>
+      <button type="button" onClick={() => setNewOpen(true)} style={{ ...btn, position: "fixed", left: 16, bottom: "calc(20px + env(safe-area-inset-bottom,0px))", zIndex: 9000, borderRadius: 999, boxShadow: "0 12px 26px rgba(194,24,91,.4)" }}>+ فاتورة متجر</button>
       {newOpen && <NewInvoice onClose={() => setNewOpen(false)} onDone={() => { setNewOpen(false); load(); }} flash={flash} />}
       {detailId && <InvoiceDetail id={detailId} onClose={() => setDetailId(null)} onChanged={load} flash={flash} />}
     </div>
