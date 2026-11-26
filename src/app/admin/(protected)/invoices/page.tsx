@@ -11,7 +11,7 @@ type Detail = {
   payments: { id: string; method: string; amount: number; paidAt: string }[];
   refunds: { id: string; method: string; amount: number; reason: string; date: string }[];
 };
-type Svc = { id: string; name: string; price: number };
+type Svc = { id: string; name: string; price: number; stock: number };
 type Cust = { id: string; name: string; phone: string };
 type Row = { key: number; serviceId: string; description: string; quantity: string; unitPrice: string; discount: string };
 
@@ -51,6 +51,7 @@ function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () =
 }
 
 function NewInvoice({ onClose, onDone, flash }: { onClose: () => void; onDone: () => void; flash: (m: string) => void }) {
+  const [svcs, setSvcs] = useState<Svc[]>([]);
   const [custs, setCusts] = useState<Cust[]>([]);
   const [customerId, setCustomerId] = useState("");
   const [rows, setRows] = useState<Row[]>([{ key: 1, serviceId: "", description: "", quantity: "1", unitPrice: "", discount: "0" }]);
@@ -61,8 +62,8 @@ function NewInvoice({ onClose, onDone, flash }: { onClose: () => void; onDone: (
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    call<{ services?: Svc[]; customers?: Cust[] }>("/api/admin/invoices/lookups", "GET").then((r) => {
-      if (r.ok) { setCusts(r.data.customers ?? []); }
+    call<{ products?: Svc[]; customers?: Cust[] }>("/api/admin/invoices/lookups", "GET").then((r) => {
+      if (r.ok) { setSvcs(r.data.products ?? []); setCusts(r.data.customers ?? []); }
     });
   }, []);
 
@@ -107,7 +108,14 @@ function NewInvoice({ onClose, onDone, flash }: { onClose: () => void; onDone: (
       </select>
       {rows.map((r, i) => (
         <div key={r.key} style={{ ...card, marginTop: 10 }}>
-          <input style={inp} placeholder="اسم المنتج" value={r.description} onChange={(e) => upd(r.key, { description: e.target.value })} />
+          <select style={inp} value={r.serviceId} onChange={(e) => {
+            const s = svcs.find((x) => x.id === e.target.value);
+            upd(r.key, { serviceId: e.target.value, description: s ? s.name : "", unitPrice: s ? String(s.price) : r.unitPrice });
+          }}>
+            <option value="">منتج حر (اكتب الاسم)</option>
+            {svcs.map((s) => <option key={s.id} value={s.id} disabled={s.stock <= 0}>{s.name} · متاح {s.stock}</option>)}
+          </select>
+          {!r.serviceId && <input style={{ ...inp, marginTop: 8 }} placeholder="اسم المنتج" value={r.description} onChange={(e) => upd(r.key, { description: e.target.value })} />}
           <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
             <input style={inp} type="number" inputMode="numeric" placeholder="الكمية" value={r.quantity} onChange={(e) => upd(r.key, { quantity: e.target.value })} />
             <input style={inp} type="number" inputMode="decimal" placeholder="السعر" value={r.unitPrice} onChange={(e) => upd(r.key, { unitPrice: e.target.value })} />

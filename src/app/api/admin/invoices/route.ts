@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { DATE_RE, dayEnd, dayStart } from "@/lib/finance";
 import { audit, requireOwner } from "@/lib/ledger";
-import { accountId, cents, fail, invoiceSchema, money, serializeInvoice, statusOf, toCents } from "@/lib/invoices";
+import { accountId, fail, invoiceSchema, money, serializeInvoice, statusOf, toCents } from "@/lib/invoices";
 
 export const dynamic = "force-dynamic";
 
@@ -45,13 +45,11 @@ export async function POST(req: Request) {
   if (!p.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const d = p.data;
   const bad = (m: string) => NextResponse.json({ error: m }, { status: 400 });
-
   const key = (req.headers.get("idempotency-key") || "").slice(0, 100) || null;
   if (key) {
     const ex = await prisma.invoice.findUnique({ where: { idempotencyKey: key } });
     if (ex) return NextResponse.json(serializeInvoice(ex));
   }
-
   let customerId = d.customerId || null;
   if (d.bookingId) {
     const b = await prisma.booking.findUnique({ where: { id: d.bookingId }, select: { customerId: true } });
@@ -63,26 +61,25 @@ export async function POST(req: Request) {
     if (!c) return bad("العميل غير موجود");
   }
 
-  const sids = Array.from(new Set(d.items.map((i) => i.serviceId).filter((x): x is string => !!x)));
-  const services = sids.length
-    ? await prisma.service.findMany({ where: { id: { in: sids } }, select: { id: true, name: true, price: true, discountPrice: true } })
+  const pids = Array.from(new Set(d.items.map((i) => i.serviceId).filter((x): x is string => !!x)));
+  const products = pids.length
+    ? await prisma.shopProduct.findMany({ where: { id: { in: pids } }, select: { id: true, name: true, price: true } })
     : [];
-  const sMap = new Map<string, (typeof services)[number]>(services.map((s) => [s.id, s] as [string, (typeof services)[number]]));
-
-  const lines: { serviceId: string | null; description: string; quantity: number; unit: number; dc: number; line: number }[] = [];
+  const pMap = new Map<string, (typeof products)[number]>(products.map((x) => [x.id, x] as [string, (typeof products)[number]]));
+  const lines: { productId: string | null; description: string; quantity: number; unit: number; dc: number; line: number }[] = [];
   let sub = 0;
   let disc = 0;
   for (const it of d.items) {
-    const s = it.serviceId ? sMap.get(it.serviceId) : undefined;
-    if (it.serviceId && !s) return bad("خدمة غير موجودة");
-    const unit = it.unitPrice != null ? toCents(it.unitPrice) : s ? cents(s.discountPrice ?? s.price) : null;
+    const pr = it.serviceId ? pMap.get(it.serviceId) : undefined;
+    if (it.serviceId && !pr) return bad("منتج غير موجود");
+    const unit = it.unitPrice != null ? toCents(it.unitPrice) : pr ? toCents(Number(pr.price)) : null;
     if (unit == null) return bad("السعر مطلوب");
-    const description = (it.description || s?.name || "").trim();
-    if (!description) return bad("وصف البند مطلوب");
+    const description = (it.description || pr?.name || "").trim();
+    if (!description) return bad("اسم المنتج مطلوب");
     const gross = unit * it.quantity;
     const dc = toCents(it.discount);
     if (dc > gross) return bad("الخصم أكبر من قيمة البند");
-    lines.push({ serviceId: s?.id ?? null, description, quantity: it.quantity, unit, dc, line: gross - dc });
+    lines.push({ productId: pr?.id ?? null, description, quantity: it.quantity, unit, dc, line: gross - dc });
     sub += gross;
     disc += dc;
   }
@@ -91,8 +88,15 @@ export async function POST(req: Request) {
   const paySum = d.payments.reduce((a, x) => a + toCents(x.amount), 0);
   if (paySum > total) return bad("المدفوع أكبر من إجمالي الفاتورة");
 
+  const qtyBy = new Map<string, number>();
+  for (const l of lines) if (l.productId) qtyBy.set(l.productId, (qtyBy.get(l.productId) ?? 0) + l.quantity);
+
   try {
     const inv = await prisma.$transaction(async (tx) => {
+      for (const [pid, qty] of Array.from(qtyBy.entries())) {
+        const r = await tx.shopProduct.updateMany({ where: { id: pid, stock: { gte: qty } }, data: { stock: { decrement: qty } } });
+        if (r.count === 0) throw new Error("STOCK");
+      }
       const created = await tx.invoice.create({
         data: {
           customerId,
@@ -107,7 +111,7 @@ export async function POST(req: Request) {
           createdById: g.actor.id,
           items: {
             create: lines.map((l) => ({
-              serviceId: l.serviceId,
+              serviceId: l.productId,
               description: l.description,
               quantity: l.quantity,
               unitPrice: money(l.unit),
@@ -137,6 +141,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(serializeInvoice(inv));
   } catch (err) {
+    if ((err as Error)?.message === "STOCK") return NextResponse.json({ error: "الكمية المطلوبة أكبر من المخزون المتاح" }, { status: 400 });
     if ((err as { code?: string })?.code === "P2002") {
       if (key) {
         const ex = await prisma.invoice.findUnique({ where: { idempotencyKey: key } });

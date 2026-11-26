@@ -19,6 +19,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       if (inv.status === "CANCELLED") return inv;
       const agg = await tx.invoiceRefund.aggregate({ where: { invoiceId: inv.id }, _sum: { amount: true } });
       if (cents(inv.paidTotal) - cents(agg._sum.amount ?? 0) > 0) throw new Error("HASPAID");
+      const its = await tx.invoiceItem.findMany({ where: { invoiceId: inv.id, serviceId: { not: null } }, select: { serviceId: true, quantity: true } });
+      for (const it of its) {
+        await tx.shopProduct.updateMany({ where: { id: it.serviceId as string }, data: { stock: { increment: it.quantity } } });
+      }
       const upd = await tx.invoice.update({
         where: { id: inv.id },
         data: { status: "CANCELLED", cancelledAt: new Date(), cancelReason: p.data.reason },
