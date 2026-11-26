@@ -71,6 +71,7 @@ const CSS = `
 export default function FinancePage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [openings, setOpenings] = useState<Array<{ code: string; name: string; opening: number | null; closing: number | null }>>([]);
   const [totals, setTotals] = useState<Bucket>(ZERO);
   const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -122,7 +123,7 @@ export default function FinancePage() {
       const r = await fetch("/api/admin/finance?" + p.toString());
       if (!r.ok) throw new Error(String(r.status));
       const d = await r.json();
-      setEntries(d.entries); setSummary(d.summary); setTotals(d.totals); setTruncated(!!d.truncated);
+      setEntries(d.entries); setSummary(d.summary); setOpenings(d.openings || []); setTotals(d.totals); setTruncated(!!d.truncated);
     } catch {
       setErr("فشل تحميل البيانات");
     }
@@ -291,6 +292,22 @@ export default function FinancePage() {
               </div>
             </div>
           </div>
+
+          {openings.length > 0 && (
+            <div className="fn-card" style={{ padding: 14, marginBottom: 12 }}>
+              <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 10, color: "#5a1535" }}>رصيد الخزينة اليوم</div>
+              {openings.map((o) => (
+                <div key={o.code} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", fontSize: 13.5, gap: 8 }}>
+                  <span style={{ fontWeight: 700 }}>{o.name}</span>
+                  {o.opening === null ? (
+                    <span style={{ opacity: 0.6, fontSize: 12 }}>اعتمدي الرصيد الافتتاحي من الأرصدة</span>
+                  ) : (
+                    <span>أول اليوم <b>{fmt(o.opening)}</b> ← الآن <b style={{ color: netColor(o.closing ?? 0) }}>{fmt(o.closing ?? 0)}</b></span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           <div style={{ display: "grid", gap: 10, marginBottom: 10 }}>
             {(["cash", "vodafone_cash"] as const).map((k) => {

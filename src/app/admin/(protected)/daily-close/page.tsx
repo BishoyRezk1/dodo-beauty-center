@@ -8,6 +8,9 @@ type St = {
   opening?: number; receipts?: number; payments?: number; transfersIn?: number; transfersOut?: number; closing?: number;
 };
 
+type Day = { date: string; opening: number; closing: number };
+type Ser = { code: string; name: string; status: "OK" | "NO_OPENING"; days?: Day[] };
+const td: CSSProperties = { padding: "6px 4px", textAlign: "center" };
 const PINK = "#c2185b";
 const fmt = (n: number) => n.toLocaleString("ar-EG", { maximumFractionDigits: 2 }) + " ج";
 const todayStr = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(new Date());
@@ -24,6 +27,7 @@ export default function DailyClosePage() {
   const [date, setDate] = useState(todayStr());
   const [data, setData] = useState<St[] | null>(null);
   const [err, setErr] = useState("");
+  const [series, setSeries] = useState<Ser[]>([]);
 
   const load = useCallback(async (d: string) => {
     setData(null);
@@ -39,6 +43,10 @@ export default function DailyClosePage() {
     }
   }, []);
   useEffect(() => { load(date); }, [date, load]);
+  useEffect(() => {
+    fetch(`/api/admin/daily-balances?from=${date.slice(0, 8)}01&to=${date}`)
+      .then((r) => r.json()).then((j) => setSeries(j.accounts ?? [])).catch(() => setSeries([]));
+  }, [date]);
 
   const ok = (data ?? []).filter((x) => x.status === "OK");
   const sum = (k: "opening" | "receipts" | "payments" | "closing") => ok.reduce((a, x) => a + (x[k] ?? 0), 0);
@@ -76,6 +84,29 @@ export default function DailyClosePage() {
           <div style={row}><b>ختامي</b><b>{fmt(sum("closing"))}</b></div>
         </div>
       )}
+      {series.filter((s) => s.status === "OK" && (s.days?.length ?? 0) > 0).map((s) => (
+        <div key={s.code} style={card}>
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>{s.name} — أيام الشهر</div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", fontSize: 12.5, borderCollapse: "collapse" }}>
+              <thead><tr style={{ opacity: 0.6 }}><th style={td}>اليوم</th><th style={td}>افتتاحي</th><th style={td}>صافي الحركة</th><th style={td}>ختامي</th></tr></thead>
+              <tbody>
+                {[...(s.days ?? [])].reverse().map((d) => {
+                  const mv = Math.round((d.closing - d.opening) * 100) / 100;
+                  return (
+                    <tr key={d.date} style={{ borderTop: "1px solid #fbe3ec" }}>
+                      <td style={td}>{d.date.slice(8)}</td>
+                      <td style={td}>{fmt(d.opening)}</td>
+                      <td style={{ ...td, color: mv >= 0 ? "#1b7f4b" : "#b42318" }}>{fmt(mv)}</td>
+                      <td style={{ ...td, fontWeight: 800 }}>{fmt(d.closing)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
       <button type="button" onClick={() => window.print()} style={{ ...nav, width: "100%", marginTop: 4, fontSize: 15 }}>طباعة</button>
       <div style={{ fontSize: 12, opacity: 0.7, lineHeight: 1.7, marginTop: 12 }}>
         افتتاحي كل يوم = ختامي اليوم السابق تلقائيًا (الرصيد الدفتري). التواريخ بتوقيت القاهرة. التحويل بين الحسابين لا يعتبر إيرادًا ولا مصروفًا.
