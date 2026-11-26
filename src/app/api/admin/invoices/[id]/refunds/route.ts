@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { audit, requireOwner } from "@/lib/ledger";
+import { monthLocked } from "@/lib/archive";
+import { cairoDay } from "@/lib/treasury";
 import { accountId, cents, fail, lockInvoice, money, refundSchema, serializeInvoice, toCents } from "@/lib/invoices";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +15,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const p = refundSchema.safeParse(body);
   if (!p.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const d = p.data;
+  if (await monthLocked(cairoDay(new Date()).slice(0, 7))) return NextResponse.json({ error: "الشهر مقفول. افتحيه من الأرشيف الشهري أولاً" }, { status: 423 });
   const key = (req.headers.get("idempotency-key") || "").slice(0, 100) || null;
   if (key) {
     const ex = await prisma.invoiceRefund.findUnique({ where: { idempotencyKey: key } });

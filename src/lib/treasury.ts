@@ -122,3 +122,45 @@ export async function dailyStatement(a: Acc, date: string) {
     closing: p(closing),
   };
 }
+
+export type DayRow = {
+  date: string; opening: number; receipts: number; payments: number;
+  transfersIn: number; transfersOut: number; closing: number;
+};
+
+export async function dailySeries(
+  a: Acc, from: string, to: string
+): Promise<{ status: "OK"; days: DayRow[] } | { status: "NO_OPENING" }> {
+  if (!isApproved(a) || !a.openingDate) return { status: "NO_OPENING" };
+  const d0 = a.openingDate.toISOString().slice(0, 10);
+  const start = from < d0 ? d0 : from;
+  if (to < start) return { status: "OK", days: [] };
+  const mv = await loadMovements(a, d0, to);
+  const by = new Map<string, { r: number; p: number; i: number; o: number }>();
+  let run = s(a.openingBalance);
+  for (const m of mv) {
+    if (m.day < start) {
+      run += m.kind === "receipt" || m.kind === "in" ? m.c : -m.c;
+      continue;
+    }
+    const b = by.get(m.day) ?? { r: 0, p: 0, i: 0, o: 0 };
+    if (m.kind === "receipt") b.r += m.c;
+    else if (m.kind === "payment") b.p += m.c;
+    else if (m.kind === "in") b.i += m.c;
+    else b.o += m.c;
+    by.set(m.day, b);
+  }
+  const days: DayRow[] = [];
+  const end = new Date(to + "T00:00:00.000Z").getTime();
+  for (let t = new Date(start + "T00:00:00.000Z").getTime(); t <= end; t += DAY) {
+    const day = new Date(t).toISOString().slice(0, 10);
+    const b = by.get(day) ?? { r: 0, p: 0, i: 0, o: 0 };
+    const opening = run;
+    run = opening + b.r - b.p + b.i - b.o;
+    days.push({
+      date: day, opening: p(opening), receipts: p(b.r), payments: p(b.p),
+      transfersIn: p(b.i), transfersOut: p(b.o), closing: p(run),
+    });
+  }
+  return { status: "OK", days };
+}

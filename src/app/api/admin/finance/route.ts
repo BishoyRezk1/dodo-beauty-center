@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { DATE_RE, bucket, cairoToday, dayEnd, dayStart, entrySchema, noon } from "@/lib/finance";
 import { audit, requireOwner, serializeLedger } from "@/lib/ledger";
 import { monthLocked } from "@/lib/archive";
+import { dailySeries } from "@/lib/treasury";
 
 export const dynamic = "force-dynamic";
 
@@ -157,9 +158,17 @@ export async function GET(req: Request) {
   const income = sumOf("income") + invSum("income");
   const expense = sumOf("expense") + invSum("expense");
 
+  const accRows = await prisma.financeAccount.findMany({ where: { isActive: true } });
+  const openings = await Promise.all(accRows.map(async (a) => {
+    const r = await dailySeries(a, today, today);
+    const d = r.status === "OK" ? r.days[0] : undefined;
+    return { code: a.code, name: a.name, opening: d ? d.opening : null, closing: d ? d.closing : null };
+  }));
+
   return NextResponse.json({
     entries: merged.slice(0, 500).map(({ ts: _ts, ...r }) => r),
     truncated: rows.length > 500 || merged.length > 500,
+    openings,
     totals: {
       income: Math.round(income * 100) / 100,
       expense: Math.round(expense * 100) / 100,
