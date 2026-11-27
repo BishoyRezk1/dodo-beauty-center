@@ -6,6 +6,7 @@ type Entry = {
   id: string; type: "income" | "expense"; amount: number; category: string;
   method: "cash" | "vodafone_cash"; date: string; description: string | null;
   source?: "LEDGER" | "INVOICE"; invoiceNo?: number;
+  due?: { id: string; total: number; collected: number; remaining: number };
 };
 type Bucket = { income: number; expense: number; net: number };
 type Summary = { today: Record<string, Bucket>; month: Record<string, Bucket> };
@@ -97,6 +98,13 @@ export default function FinancePage() {
   const [ftype, setFtype] = useState("");
   const [fmethod, setFmethod] = useState("");
   const [q, setQ] = useState("");
+  const [receivables, setReceivables] = useState({ total: 0, count: 0 });
+  const [isDeferred, setIsDeferred] = useState(false);
+  const [dTotal, setDTotal] = useState("");
+  const [collectFor, setCollectFor] = useState<Entry | null>(null);
+  const [cAmount, setCAmount] = useState("");
+  const [cMethod, setCMethod] = useState<"cash" | "vodafone_cash">("cash");
+  const [cKey, setCKey] = useState("");
 
   useEffect(() => { setToday(cairoToday()); }, []);
   useEffect(() => {
@@ -117,7 +125,7 @@ export default function FinancePage() {
       const r = await fetch("/api/admin/finance?" + p.toString());
       if (!r.ok) throw new Error(String(r.status));
       const d = await r.json();
-      setEntries(d.entries); setSummary(d.summary); setOpenings(d.openings || []); setTotals(d.totals); setTruncated(!!d.truncated);
+      setEntries(d.entries); setSummary(d.summary); setOpenings(d.openings || []); setReceivables(d.receivables || { total: 0, count: 0 }); setTotals(d.totals); setTruncated(!!d.truncated);
     } catch {
       setErr("فشل تحميل البيانات");
     }
@@ -130,7 +138,7 @@ export default function FinancePage() {
   }, [load]);
 
   function openNew() {
-    setIsTransfer(false);
+    setIsTransfer(false); setIsDeferred(false); setDTotal("");
     setEditId(null); setSheetErr("");
     setForm((f) => ({ type: f.type, amount: "", category: "", method: f.method, date: today || cairoToday(), description: "" }));
     setSheetOpen(true);
@@ -146,7 +154,27 @@ export default function FinancePage() {
   async function save() {
     setSheetErr("");
     const amt = parseFloat(form.amount);
-    if (!(amt > 0)) { setSheetErr("اكتبي مبلغ صحيح"); return; }
+    if (!defOn && !(amt > 0)) { setSheetErr("اكتبي مبلغ صحيح"); return; }
+    if (defOn) {
+      const paid = amt > 0 ? amt : 0;
+      const total = parseFloat(dTotal);
+      if (!(total > 0)) { setSheetErr("اكتبي الإجمالي المتفق عليه"); return; }
+      if (paid >= total) { setSheetErr("المدفوع لازم يكون أقل من الإجمالي"); return; }
+      if (!form.category) { setSheetErr("اختاري التصنيف"); return; }
+      if (!form.date) { setSheetErr("اختاري التاريخ"); return; }
+      setBusy(true);
+      try {
+        const r = await fetch("/api/admin/finance/deferred", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+          body: JSON.stringify({ type: "income", amount: paid, dueAmount: Math.round((total - paid) * 100) / 100, category: form.category, method: form.method, date: form.date, description: form.description || null }),
+        });
+        if (!r.ok) { const j = await r.json().catch(() => null); setSheetErr(j && j.error && j.error !== "invalid" ? j.error : "فشل الحفظ، راجعي البيانات"); }
+        else { setSheetOpen(false); setToast("✓ تم الحفظ — المتبقي مسجّل آجل"); await load(); }
+      } catch { setSheetErr("حصل خطأ في الاتصال"); }
+      setBusy(false);
+      return;
+    }
     if (isTransfer) {
       setBusy(true);
       try {
@@ -197,6 +225,31 @@ export default function FinancePage() {
     await load();
   }
 
+  function openCollect(e: Entry) {
+    if (!e.due) return;
+    setCollectFor(e); setCMethod("cash"); setCKey(crypto.randomUUID());
+    setCAmount(String(e.due.remaining)); setSheetErr("");
+  }
+
+  async function doCollect() {
+    if (!collectFor || !collectFor.due) return;
+    const a = parseFloat(cAmount);
+    if (!(a > 0)) { setSheetErr("اكتبي مبلغ صحيح"); return; }
+    if (a > collectFor.due.remaining + 0.001) { setSheetErr("المبلغ أكبر من المتبقي"); return; }
+    setBusy(true);
+    try {
+      const r = await fetch("/api/admin/finance/" + collectFor.id + "/collect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Idempotency-Key": cKey },
+        body: JSON.stringify({ amount: a, method: cMethod }),
+      });
+      if (!r.ok) { const j = await r.json().catch(() => null); setSheetErr(j && j.error && j.error !== "invalid" ? j.error : "فشل التحصيل"); }
+      else { setCollectFor(null); setToast("✓ تم التحصيل"); await load(); }
+    } catch { setSheetErr("حصل خطأ في الاتصال"); }
+    setBusy(false);
+  }
+
+  const defOn = isDeferred && form.type === "income" && !isTransfer && !editId;
   const baseCats = CATS[form.type];
   const cats = !form.category || baseCats.includes(form.category) ? baseCats : [...baseCats, form.category];
   const tAll = summary?.today.all || ZERO;
@@ -293,6 +346,13 @@ export default function FinancePage() {
             })}
           </div>
         </>
+      )}
+
+      {receivables.count > 0 && (
+        <div className="fn-card" style={{ padding: "10px 14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
+          <b style={{ color: "#b54708" }}>⏳ مستحقات عند العملاء ({receivables.count.toLocaleString("ar-EG")})</b>
+          <b style={{ color: "#b54708", fontSize: 15 }}>{fmt(receivables.total)}</b>
+        </div>
       )}
 
       {breakdown.arr.length > 0 && (
@@ -420,6 +480,11 @@ export default function FinancePage() {
                       <div style={{ fontSize: 12, opacity: 0.7, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.description}</div>
                     )}
                     <div style={{ fontSize: 11.5, opacity: 0.6, marginTop: 1 }}>{MI[e.method]} {ML[e.method]}{e.source === "INVOICE" ? " · " + e.category : ""}</div>
+                    {e.due && (e.due.remaining > 0.001 ? (
+                      <div style={{ marginTop: 3, fontSize: 11.5, fontWeight: 800, color: "#b54708" }}>⏳ متبقي {fmt(e.due.remaining)} من إجمالي {fmt(e.amount + e.due.total)}</div>
+                    ) : (
+                      <div style={{ marginTop: 3, fontSize: 11.5, fontWeight: 700, color: GREEN }}>✓ اتحصّل بالكامل</div>
+                    ))}
                   </div>
                   <div style={{ textAlign: "left", flexShrink: 0 }}>
                     <div style={{ fontWeight: 800, fontSize: 15, color: e.type === "income" ? GREEN : RED }}>
@@ -427,6 +492,9 @@ export default function FinancePage() {
                     </div>
                     {e.source !== "INVOICE" && (
                       <div style={{ display: "flex", gap: 5, marginTop: 4, justifyContent: "flex-end" }}>
+                        {e.due && e.due.remaining > 0.001 && (
+                          <button onClick={() => openCollect(e)} className="fn-press" style={{ height: 28, padding: "0 10px", borderRadius: 9, background: "#fff3e0", color: "#b54708", fontWeight: 800, fontSize: 12 }}>تحصيل</button>
+                        )}
                         <button onClick={() => openEdit(e)} className="fn-press" aria-label="تعديل"
                           style={{ width: 28, height: 28, borderRadius: 9, background: "#fdf0f5", fontSize: 13 }}>✏️</button>
                         <button onClick={() => remove(e)} className="fn-press" aria-label="حذف"
@@ -440,6 +508,34 @@ export default function FinancePage() {
           </div>
         );
       })}
+
+      {collectFor && collectFor.due && (
+        <div className="fn-overlay" onClick={() => setCollectFor(null)}>
+          <div className="fn-sheet" dir="rtl" onClick={(e) => e.stopPropagation()}>
+            <div style={{ width: 44, height: 5, borderRadius: 5, background: "#e8c3d3", margin: "0 auto 12px" }} />
+            <div className="font-display" style={{ fontWeight: 800, fontSize: 18, marginBottom: 6, color: "#5a1535" }}>تحصيل متبقي</div>
+            <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 12 }}>{collectFor.category}{collectFor.description ? " — " + collectFor.description : ""} · المتبقي <b>{fmt(collectFor.due.remaining)}</b></div>
+            <input className="fn-input" type="number" inputMode="decimal" step="0.01" min="0" value={cAmount} onChange={(e) => setCAmount(e.target.value)}
+              style={{ fontSize: 28, fontWeight: 800, textAlign: "center", color: GREEN, marginBottom: 12 }} />
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {(["cash", "vodafone_cash"] as const).map((k) => (
+                <button key={k} className="fn-press" onClick={() => setCMethod(k)}
+                  style={{ flex: 1, padding: "11px 8px", borderRadius: 14, fontWeight: 800, fontSize: 14,
+                    border: "1.5px solid " + (cMethod === k ? "#7a1d44" : "#f0cfdd"),
+                    background: cMethod === k ? "#7a1d44" : "#fff", color: cMethod === k ? "#fff" : "#5a2a3d" }}>
+                  {MI[k]} {ML[k]}
+                </button>
+              ))}
+            </div>
+            {sheetErr && <p style={{ color: RED, fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{sheetErr}</p>}
+            <button disabled={busy} onClick={doCollect} className="fn-press"
+              style={{ width: "100%", padding: 14, borderRadius: 16, fontWeight: 800, fontSize: 15.5, color: "#fff", opacity: busy ? 0.7 : 1, background: "linear-gradient(135deg,#2f9e44,#51cf66)" }}>
+              {busy ? "جاري التحصيل..." : "تسجيل التحصيل"}
+            </button>
+            <button onClick={() => setCollectFor(null)} style={{ width: "100%", padding: 10, marginTop: 4, fontWeight: 700, opacity: 0.6 }}>إلغاء</button>
+          </div>
+        </div>
+      )}
 
       {!sheetOpen && <button className="fn-fab fn-press" onClick={openNew}>＋ عملية جديدة</button>}
 
@@ -476,6 +572,21 @@ export default function FinancePage() {
                 style={{ fontSize: 30, fontWeight: 800, textAlign: "center", padding: "12px 52px", color: isTransfer ? "#7a1d44" : form.type === "income" ? GREEN : RED }} />
               <span style={{ position: "absolute", top: "50%", transform: "translateY(-50%)", right: 18, fontWeight: 800, opacity: 0.5 }}>ج</span>
             </div>
+
+            {!isTransfer && form.type === "income" && !editId && (
+              <div style={{ marginBottom: 12 }}>
+                <button className="fn-press" onClick={() => setIsDeferred((v) => !v)} style={chip(isDeferred, "#b54708")}>⏳ آجل (دفع جزئي)</button>
+                {isDeferred && (
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 4 }}>المبلغ الكبير فوق = المدفوع الآن. اكتبي الإجمالي المتفق عليه:</div>
+                    <input className="fn-input" type="number" inputMode="decimal" min="0" step="0.01" placeholder="الإجمالي" value={dTotal} onChange={(e) => setDTotal(e.target.value)} />
+                    {parseFloat(dTotal) > 0 && (
+                      <div style={{ marginTop: 6, fontSize: 13, fontWeight: 800, color: "#b54708" }}>المتبقي آجل: {fmt(Math.max(0, (parseFloat(dTotal) || 0) - (parseFloat(form.amount) || 0)))}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {isTransfer ? (
               <>

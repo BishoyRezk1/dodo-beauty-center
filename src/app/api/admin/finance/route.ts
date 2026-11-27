@@ -5,6 +5,7 @@ import { DATE_RE, bucket, cairoToday, dayEnd, dayStart, entrySchema, noon } from
 import { audit, requireOwner, serializeLedger } from "@/lib/ledger";
 import { monthLocked } from "@/lib/archive";
 import { dailySeries } from "@/lib/treasury";
+import { loadDues, outstanding } from "@/lib/dues";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ type OutRow = {
   source: "LEDGER" | "INVOICE";
   invoiceNo?: number;
   ts: number;
+  due?: { id: string; total: number; collected: number; remaining: number };
 };
 
 export async function GET(req: Request) {
@@ -134,10 +136,12 @@ export async function GET(req: Request) {
         String(r.invoiceNo ?? "").includes(q))
   );
 
+  const dueMap = await loadDues(rows.slice(0, 500).map((e) => e.id));
   const ledgerRows: OutRow[] = rows.slice(0, 500).map((e) => ({
     ...serializeLedger(e),
     source: "LEDGER" as const,
     ts: e.createdAt.getTime(),
+    due: dueMap.get(e.id),
   }));
   const merged = [...ledgerRows, ...invFiltered].sort((a, b) =>
     a.date < b.date ? 1 : a.date > b.date ? -1 : b.ts - a.ts
@@ -158,6 +162,7 @@ export async function GET(req: Request) {
   const income = sumOf("income") + invSum("income");
   const expense = sumOf("expense") + invSum("expense");
 
+  const receivables = await outstanding();
   const accRows = await prisma.financeAccount.findMany({ where: { isActive: true } });
   const openings = await Promise.all(accRows.map(async (a) => {
     const r = await dailySeries(a, today, today);
@@ -169,6 +174,7 @@ export async function GET(req: Request) {
     entries: merged.slice(0, 500).map(({ ts: _ts, ...r }) => r),
     truncated: rows.length > 500 || merged.length > 500,
     openings,
+    receivables,
     totals: {
       income: Math.round(income * 100) / 100,
       expense: Math.round(expense * 100) / 100,
